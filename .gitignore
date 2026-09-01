@@ -1,0 +1,7 @@
+/out
+/converted
+
+*.pdf
+*.py
+
+.claude

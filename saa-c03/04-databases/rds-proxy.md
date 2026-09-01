@@ -2,13 +2,15 @@
 
 Not mentioned in the base cheat sheet — commonly tested in Lambda-to-RDS connection scenarios.
 
-## To research
+## Answers (from slides, pages 121-270)
 
-- Why direct Lambda → RDS connections are a problem at scale (connection exhaustion)
-- How RDS Proxy pools and shares database connections
-- Failover time improvements vs. connecting directly to RDS/Aurora
-- IAM authentication support
-- Which engines it supports
+- Fully managed, serverless, auto-scaling, Multi-AZ (highly available) database proxy that sits in front of RDS/Aurora
+- Pools and shares DB connections established by the app, reducing stress on the database (CPU/RAM) and minimizing open connections/timeouts — this is what solves connection exhaustion from many short-lived Lambda invocations connecting directly
+- Reduces RDS/Aurora failover time by up to 66% vs. connecting directly
+- Supports RDS engines (MySQL, PostgreSQL, MariaDB, SQL Server) and Aurora (MySQL, PostgreSQL)
+- Enforces IAM Authentication and can pull DB credentials securely from AWS Secrets Manager
+- Requires no code changes for most applications
+- Never publicly accessible — must be accessed from within a VPC
 
 ## Notes
 

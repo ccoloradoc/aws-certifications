@@ -16,3 +16,9 @@ The base cheat sheet covered EC2 purchasing options but almost nothing else from
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### Cost Explorer & Trusted Advisor detail (from slides, pages 721-870)
+
+- **Cost Explorer**: visualize/analyze cost & usage over time; custom reports at account-wide or monthly/hourly/resource-level granularity; grouping by service, account, region, instance type, tag, API operation, AZ, etc.; recommends an optimal Savings Plan based on the last 60 days of usage (shows estimated $/hour commitment and projected monthly savings vs. On-Demand); forecasts usage up to 18 months out from historical trends
+- **AWS Cost Anomaly Detection**: ML-based continuous monitoring that learns your normal spend pattern (no manual thresholds needed) to catch one-time spikes or sustained cost creep; scoped to services, member accounts, cost allocation tags, or cost categories; delivers a root-cause anomaly report via individual alerts or daily/weekly SNS summaries
+- **Trusted Advisor**: agentless, high-level account assessment across Cost Optimization, Performance, Security, Fault Tolerance, Service Limits, and Operational Excellence; the full check set and programmatic access via the Support API require a Business or Enterprise support plan (the free tier only gets a limited check set)

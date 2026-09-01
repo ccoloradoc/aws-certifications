@@ -5,6 +5,7 @@ Study notes organized by AWS service domain.
 ## Structure
 
 - [`well-architected-framework.md`](well-architected-framework.md) — the 6 pillars underlying how exam questions are framed
+- [`open-research-items.md`](open-research-items.md) — table of every concept still unanswered across the "To research" sections below — your study checklist
 - [`00-exam-strategy.md`](00-exam-strategy.md) — how to approach exam questions
 - [`01-compute/`](01-compute/) — EC2, ECS, Fargate, Elastic Beanstalk, Lambda
 - [`02-networking/`](02-networking/) — VPC, Route 53, load balancing, hybrid connectivity, CDN
@@ -18,6 +19,7 @@ Study notes organized by AWS service domain.
 - [`10-resilience-dr/`](10-resilience-dr/) — disaster recovery strategies, AWS Backup, Elastic Disaster Recovery
 - [`11-other-services/`](11-other-services/) — miscellaneous managed services, hybrid/edge infrastructure
 - [`12-cost-optimization/`](12-cost-optimization/) — Cost Explorer, Budgets, Trusted Advisor, Savings Plans
+- [`13-machine-learning/`](13-machine-learning/) — Rekognition, Transcribe, Polly, Translate, Lex, Connect, Comprehend, SageMaker, Kendra, Personalize, Textract
 
 ## Sources
 
