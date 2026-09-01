@@ -1,5 +1,7 @@
 # VPC
 
+A Virtual Private Cloud (VPC) is an isolated, private network hosted within a public cloud that lets you run resources safely.
+
 ## Core Concepts
 
 - VPCs map to Regions; subnets map 1-to-1 with Availability Zones
@@ -79,6 +81,87 @@
 - NAT Instance (legacy, still testable): an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound)
 - NAT Gateway: AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
 - Regional NAT Gateway (RNAT) — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
+
+### Security Groups fundamentals (from slides, pages 1-120 — previously missed)
+
+- The fundamental unit of network security in AWS; control inbound/outbound traffic to/from an EC2 instance; contain only rules (no explicit deny); rules can reference an IP range or another security group
+- Regulate: which ports are open, which IP ranges (IPv4/IPv6) are authorized, and inbound vs. outbound direction independently
+- Can attach to multiple instances; locked to a region/VPC combination; live "outside" the instance — if a security group blocks traffic, the instance never sees it at all
+- Good practice: keep a dedicated security group just for SSH access, separate from application traffic rules
+- Troubleshooting rule of thumb: application times out → security group issue; application gives "connection refused" → the app itself has an error or isn't running (not a security group problem)
+- Defaults: all inbound traffic blocked, all outbound traffic allowed
+- Classic ports to know: 22 = SSH (Linux login), 21 = FTP, 22 = SFTP (file transfer over SSH), 80 = HTTP, 443 = HTTPS, 3389 = RDP (Windows login)
+
+#### What can have a security group?
+
+The unifying rule: a security group attaches to an **ENI**, so anything that provisions an ENI inside your VPC can have one. That covers far more than just EC2.
+
+| Component | Has its own SG? | Notes |
+|---|---|---|
+| Elastic Network Interface (ENI) | Yes | This is the actual attachment point — every row below only has a SG *because* it provisions one of these; a standalone ENI can also be created and attached to an instance independently |
+| EC2 instances | Yes | The classic case — attached via the instance's primary ENI |
+| RDS / Aurora DB instances | Yes | Controls who can reach the DB port |
+| ElastiCache clusters (Redis/Memcached) | Yes | — |
+| Redshift clusters | Yes | — |
+| Lambda functions | Yes, if VPC-attached | Default (non-VPC) Lambda has no ENI, so no SG; see [lambda.md](../01-compute/lambda.md) |
+| Application Load Balancer (ALB) | Yes | — |
+| Classic Load Balancer (CLB) | Yes | In EC2-VPC platform |
+| Network Load Balancer (NLB) | No (traditionally) | NLB passes traffic through preserving source IP with no SG of its own — the **targets'** SGs do the filtering; note AWS added optional NLB-level SG support more recently, but the exam still tests the classic "NLB has no SG" fact |
+| Gateway Load Balancer (GWLB) | No | Operates below the SG layer (Layer 3) |
+| Interface VPC Endpoints (PrivateLink) | Yes | Backed by an ENI |
+| Gateway VPC Endpoints (S3/DynamoDB) | No | Route-table target, not ENI-based |
+| NAT Gateway | No | AWS-managed, no SG to configure (unlike a NAT Instance) |
+| NAT Instance | Yes | It's just an EC2 instance under the hood |
+| EFS Mount Targets | Yes | One per AZ, each with its own ENI |
+| RDS Proxy | Yes | — |
+| FSx file systems (Windows/Lustre/ONTAP/OpenZFS) | Yes | — |
+| Amazon MSK brokers | Yes | — |
+| DocumentDB / Neptune clusters | Yes | — |
+| AWS Directory Service (Managed Microsoft AD) | Yes | — |
+| Amazon WorkSpaces | Yes | — |
+| SageMaker notebooks/endpoints | Yes, if VPC-attached | — |
+| Client VPN endpoints | Yes | — |
+| Internet Gateway | No | No ENI of its own |
+| Elastic IP | No | An IP address, not a network interface itself (it's attached *to* something that has an ENI/SG) |
+
+#### Elastic Network Interface (ENI) fundamentals (from slides, pages 61-90)
+
+- A logical component representing a virtual network card inside a VPC — this is the actual object a security group attaches to, and the thing every row in both tables above is really being checked for
+- Attributes an ENI can carry:
+  - One primary private IPv4 address, plus one or more secondary private IPv4 addresses
+  - Up to one Elastic IP (IPv4) per private IPv4 address it holds
+  - One public IPv4 address
+  - One or more security groups
+  - A MAC address
+- Can be created independently of any instance, then attached/detached and moved between EC2 instances on the fly — a common pattern for building failover (move the ENI, and its IPs/MAC/SG move with it, to a standby instance)
+- Bound to a specific Availability Zone — an ENI created in one AZ cannot be attached to an instance in a different AZ
+
+#### What can be assigned an ENI?
+
+The flip side of the table above: whether a component provisions an ENI at all is the real gate — SG support just follows from it. Most rows match the SG table exactly, but a few components get an ENI **without** exposing a configurable SG on it, and a couple of "networking" constructs are NOT ENI-based despite sounding like they should be.
+
+| Component | Gets an ENI? | Notes |
+|---|---|---|
+| EC2 instances | Yes | Primary ENI at launch; additional ENIs (secondary, different subnet/AZ within the same AZ as the instance) can be attached/detached on the fly |
+| RDS / Aurora, ElastiCache, Redshift, RDS Proxy, FSx, MSK brokers, DocumentDB/Neptune, WorkSpaces | Yes | Same as the SG table — managed services provision an ENI per node/instance in your VPC/subnet |
+| Lambda functions | Yes, if VPC-attached | The ENI is how a VPC-attached Lambda reaches RDS/ElastiCache/internal resources; see [lambda.md](../01-compute/lambda.md) |
+| SageMaker notebooks/endpoints | Yes, if VPC-attached | — |
+| Client VPN endpoints | Yes | Associates an ENI per subnet it's targeted at |
+| ALB / CLB | Yes | One or more ENIs per AZ/subnet the load balancer spans |
+| **NAT Gateway** | **Yes** | Gets an ENI with a private IP (and an associated Elastic IP) — but unlike a NAT Instance, AWS manages it and exposes **no configurable SG** on it (hence "No" in the SG table above despite having an ENI) |
+| Interface VPC Endpoints (PrivateLink) | Yes | The ENI is the entry point that gets the private IP |
+| EFS Mount Targets | Yes | One ENI per AZ |
+| AWS Directory Service (Managed Microsoft AD) | Yes | Creates ENIs directly in your VPC subnets |
+| **Route 53 Resolver Endpoints** (Inbound/Outbound) | Yes | Each endpoint provisions ENIs in your chosen subnets — see the Hybrid DNS notes below |
+| **Transit Gateway VPC attachments** | Yes | One ENI per subnet/AZ the attachment uses |
+| Network Load Balancer (NLB) | Yes | Gets an ENI per AZ (with a static IP) even though it traditionally has no SG of its own — traffic passes through to the targets |
+| Gateway Load Balancer (GWLB) | Yes | ENI-backed like NLB, operating below the SG layer |
+| Gateway VPC Endpoints (S3/DynamoDB) | **No** | Route-table target only — no ENI, no IP in your subnet |
+| Internet Gateway / Egress-Only Internet Gateway | **No** | Horizontally scaled, redundant logical construct — not attached as an ENI |
+| Virtual Private Gateway (VGW) | **No** | Terminates the VPN tunnel at the VPC edge, not as an ENI inside a subnet |
+| VPC Peering connection | **No** | Pure route-table construct between two VPCs — no ENI on either side |
+| Direct Connect Virtual Interface (VIF) | **No** | Operates at the DX connection level, outside any single VPC's ENIs |
+| Elastic IP | **No** | An IP address that gets *attached to* an ENI, not an ENI itself |
 
 ### NACLs in depth (from slides, pages 721-870)
 

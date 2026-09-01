@@ -25,3 +25,28 @@ Use this as your study checklist: pick a row, go to the file, fill in the gap yo
 | SSM State Manager (maintaining defined config state on instances) | [08-management-governance/systems-manager.md](08-management-governance/systems-manager.md) | Session Manager, Run Command, Patch Manager, Automation are covered |
 | Concrete RTO/RPO numbers AWS DRS targets | [10-resilience-dr/elastic-disaster-recovery.md](10-resilience-dr/elastic-disaster-recovery.md) | Mechanism (continuous block-level replication) is covered, specific target numbers aren't |
 | Each Well-Architected pillar's specific design principles; how exam wording maps to a pillar | [well-architected-framework.md](well-architected-framework.md) | Only the cross-pillar general guiding principles + the Well-Architected Tool got covered |
+
+## Gaps found against the official AWS exam guide
+
+The rows above came from cross-checking this repo's own "To research" markers. The rows below come from a separate check against the **official SAA-C03 exam guide's in-scope services list** (fetched from [docs.aws.amazon.com](https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/saa-03-in-scope-services.html) on 2026-09-01) — these are exam-scope services/concepts with little or no coverage anywhere in this repo, verified by grep (not just assumed from the list).
+
+| Concept | Suggested file | Note |
+|---|---|---|
+| Amazon Detective | [07-security-identity/monitoring-audit.md](07-security-identity/monitoring-audit.md) | Zero coverage — pairs naturally with GuardDuty/Inspector/Macie already there |
+| AWS Security Hub | [07-security-identity/monitoring-audit.md](07-security-identity/monitoring-audit.md) | Only mentioned as an Inspector integration target, never covered as its own service |
+| AWS X-Ray | [08-management-governance/observability.md](08-management-governance/observability.md) | Only a one-line seed mention ("distributed tracing") — no depth on segments, traces, service maps, sampling |
+| AWS Client VPN | [02-networking/hybrid-connectivity.md](02-networking/hybrid-connectivity.md) | Only appears as rows in the ENI/SG tables in vpc.md — what it is and how it's configured is never explained |
+| AWS Cost and Usage Report (CUR) | [12-cost-optimization/cost-management-tools.md](12-cost-optimization/cost-management-tools.md) | Zero coverage; official exam guide lists it alongside Cost Explorer/Budgets |
+| AWS Data Exchange | 05-analytics/ (no existing file) | Zero coverage |
+| AWS Serverless Application Repository | [01-compute/lambda.md](01-compute/lambda.md) | Zero coverage |
+| Amazon ECS Anywhere, EKS Anywhere, EKS Distro | [01-compute/containers-paas.md](01-compute/containers-paas.md) | Zero coverage — the on-prem/hybrid container variants |
+| Amazon Device Farm | [11-other-services/misc-managed-services.md](11-other-services/misc-managed-services.md) | Zero coverage |
+| AWS Health Dashboard | 08-management-governance/ (no existing file) | Zero coverage |
+| AWS License Manager | 08-management-governance/ (no existing file) | Zero coverage |
+| Amazon Managed Grafana; Amazon Managed Service for Prometheus | [08-management-governance/observability.md](08-management-governance/observability.md) | Zero coverage — natural fit alongside CloudWatch/X-Ray |
+| AWS Service Catalog | [07-security-identity/organizations-control-tower.md](07-security-identity/organizations-control-tower.md) | Zero coverage — governance-adjacent to Organizations/Control Tower |
+| Amazon Kinesis Video Streams | [05-analytics/streaming-and-big-data.md](05-analytics/streaming-and-big-data.md) | Zero coverage — natural fit alongside Kinesis Data Streams/Firehose |
+| AWS Artifact | [07-security-identity/](07-security-identity/) (no existing file) | Zero coverage — compliance report access |
+| "Immutable infrastructure" as a design concept | [10-resilience-dr/disaster-recovery.md](10-resilience-dr/disaster-recovery.md) | Named explicitly in Domain 2's task statement, not covered anywhere |
+
+Not flagged: Amazon Data Exchange, S3 Requester Pays, EC2 hibernation, and most other exam-guide items already have solid coverage — this list is only what came back with zero or near-zero hits.
