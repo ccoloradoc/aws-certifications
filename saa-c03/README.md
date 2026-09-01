@@ -4,6 +4,7 @@ Study notes organized by AWS service domain.
 
 ## Structure
 
+- [`00-basics/`](00-basics/) — what AWS is, its scale, common use cases, and AWS Global Infrastructure (Regions, AZs, Edge Locations) — the introductory context every later topic assumes
 - [`well-architected-framework.md`](well-architected-framework.md) — the 6 pillars underlying how exam questions are framed
 - [`open-research-items.md`](open-research-items.md) — table of every concept still unanswered across the "To research" sections below — your study checklist
 - [`00-exam-strategy.md`](00-exam-strategy.md) — how to approach exam questions

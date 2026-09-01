@@ -59,6 +59,8 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 
 <!-- Your own notes go here. -->
 
+AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global vs. region-scoped services, how to choose a Region) has moved to [00-basics/global-infrastructure.md](../00-basics/global-infrastructure.md) — it's foundational vocabulary the whole course assumes, not VPC-specific, even though it directly drives the "VPCs map to Regions, subnets map to AZs" rule in Core Concepts above.
+
 ### From slides (pages 1-120)
 
 - Public IP — unique across the whole internet, easily geo-located
