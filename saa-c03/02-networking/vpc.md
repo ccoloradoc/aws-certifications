@@ -88,7 +88,8 @@ AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global v
 
 - The fundamental unit of network security in AWS; control inbound/outbound traffic to/from an EC2 instance; contain only rules (no explicit deny); rules can reference an IP range or another security group
 - Regulate: which ports are open, which IP ranges (IPv4/IPv6) are authorized, and inbound vs. outbound direction independently
-- Can attach to multiple instances; locked to a region/VPC combination; live "outside" the instance — if a security group blocks traffic, the instance never sees it at all
+- Can attach to multiple instances; scoped to a single VPC (and thus a single Region) — **not** bound to any one AZ, so the same security group works across every AZ/subnet in that VPC (contrast with an ENI, which *is* AZ-bound); live "outside" the instance — if a security group blocks traffic, the instance never sees it at all
+  - Concretely: one security group can attach to many ENIs at once, and those ENIs can each sit in a different AZ — e.g. an Auto Scaling Group spanning 3 AZs still shares one security group across every instance's ENI, whichever AZ it landed in
 - Good practice: keep a dedicated security group just for SSH access, separate from application traffic rules
 - Troubleshooting rule of thumb: application times out → security group issue; application gives "connection refused" → the app itself has an error or isn't running (not a security group problem)
 - Defaults: all inbound traffic blocked, all outbound traffic allowed
