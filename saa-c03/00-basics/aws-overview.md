@@ -32,3 +32,33 @@ Introductory, non-technical context from the very start of the course (pages 1-3
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> AWS certification path structure: Foundational (Cloud Practitioner, AI Practitioner) → Associate (Solutions Architect Associate, Developer Associate, Cloud Ops Engineer/formerly SysOps) → Professional (Solutions Architect Professional, DevOps Professional, a generative-AI professional cert) → Specialty (networking, security).
+>
+> — *Netec S1, 26:31-28:46*
+
+> SAA-C03 course framing: think "as an architect" — integrate multiple services and choose between them on security/cost grounds, not just know what each service does in isolation (that's the Practitioner-level framing).
+>
+> — *Netec S1, 29:40-30:18*
+
+> This course is explicitly not consultancy/workshop-style — it's structured for exam prep with scenario-specific labs, not open-ended exploration.
+>
+> — *Netec S1, 30:18-30:51*
+
+> AWS benefits checklist: pay only for what you use, trade capex for opex, economies of scale, agility/speed, stop guessing capacity, go global in minutes, focus on business value instead of infrastructure — reduced complexity and increased agility called out as the two biggest.
+>
+> — *Netec S1, 49:57-52:55*
+
+> Using a cloud provider gives you the provider's advanced physical/infrastructure security controls "for free," shifting that risk off the customer — ties directly to the Shared Responsibility Model.
+>
+> — *Netec S1, 53:51-55:01*
+
+> Architect responsibilities: strategic technical planning, analyzing business requirements with an integral view (not just technical/dev/security in isolation), service research/justification ("don't just pick the first service you find — justify why"), long-term planning for growth/cost, migration/adoption enablement.
+>
+> — *Netec S1, 1:22:36-1:27:13*
+
+> AWS documentation and practice simulators/quizzes called out explicitly as exam-prep resources to use alongside the live sessions.
+>
+> — *Netec S1, 35:21-36:16*

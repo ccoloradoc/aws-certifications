@@ -27,3 +27,9 @@ Aurora is one of the engine options under RDS, but different enough to warrant i
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Aurora described as engine-compatible with MySQL and PostgreSQL but designed/optimized directly by AWS, separating compute from a distributed storage layer for efficiency/HA gains beyond standard Multi-AZ RDS. Noted that Aurora, like S3, leverages AZs under the hood automatically even when you don't explicitly pick one. Up to 15 read replicas confirmed, described as materially higher than "classic RDS." Aurora Serverless named as one of the deployment options.
+>
+> — *Netec S3, 1:14:51-1:16:04, 1:16:04-1:16:56, 1:17:39-1:18:03, 1:18:59-1:19:19*

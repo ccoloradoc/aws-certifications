@@ -46,3 +46,45 @@
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Root user explicitly compared to Linux `root`: created automatically at signup, authenticated via the signup email+password, full unrestricted access to every service/resource — should never be used for day-to-day tasks, should be protected with MFA.
+>
+> — *Netec S1, 2:50:53-2:52:10*
+
+> IAM framed as AWS's built-in identity provider, establishing the trust relationship that enables authentication and authorization — ties to "zero trust" (verify every request explicitly).
+>
+> — *Netec S1, 2:53:59-2:57:15*
+
+> Principals defined as "AWS's name for anything that needs access to the account" — can be a user, a role, another service, or another identity provider.
+>
+> — *Netec S1, 2:57:30-3:00:17*
+
+> IAM Users: an entity within an account, has its own credentials (password, access keys), has zero permissions by default — must be explicitly granted.
+>
+> — *Netec S1, 3:00:27-3:01:36*
+
+> IAM users in practice are framed mostly for platform/console administration (admin/dev access, scripts/integrations) — complemented by IAM Identity Center for corporate/workforce identity.
+>
+> — *Netec S1, 3:02:05-3:03:37*
+
+> Groups vs. Roles, framed live in Q&A: Groups = static membership/pertenencia (a user in a group inherits its permissions); Roles = flexible/temporary assignment of a function (e.g. a short-term project need or a night-shift task) with a definable lifecycle.
+>
+> — *Netec S1, 3:07:52-3:09:29*
+
+> Roles have no username/password and no permanent access keys — that's why they're used for temporary access. Assumed via a permissions policy (what the role can do) + a trust policy (who can assume it); STS issues the temporary credentials once assumed.
+>
+> — *Netec S1, 3:07:57-3:14:17*
+
+> Who/what can assume a role: an IAM user, another AWS service (Lambda → DynamoDB given as the example), an EC2 instance, a federated user, a principal in another AWS account (cross-account access), or an external identity provider (e.g. Active Directory).
+>
+> — *Netec S1, 2:57:50-2:58:31, 3:16:15-3:19:04*
+
+> Programmatic access mechanics: `aws configure` via CLI needs an Access Key ID + Secret Access Key generated from the console; the CLI itself is multiplatform-installable.
+>
+> — *Netec S1, 3:06:18-3:06:54*
+
+> Managed vs. custom policies: AWS ships pre-built/integrated policies for common job functions (e.g. "administrator access"); if that's too broad, create a custom policy instead.
+>
+> — *Netec S1, 3:07:26-3:08:00*

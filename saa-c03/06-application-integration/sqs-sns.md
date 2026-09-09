@@ -55,3 +55,13 @@
 - For migrating on-prem brokers that use open protocols (MQTT, AMQP, STOMP, OpenWire, WSS) without re-architecting to SQS/SNS's proprietary APIs
 - Managed message broker (ActiveMQ or RabbitMQ) with both queue (~SQS) and topic (~SNS) semantics in one service
 - Runs on provisioned servers (not serverless like SQS/SNS), so it doesn't scale as elastically; supports Multi-AZ with failover
+
+### From Netec live training (to review)
+
+> SQS/SNS named directly as the decoupling mechanism for a failing downstream component (e.g. a payment service) not taking down the whole request pipeline — messages simply wait in the queue.
+>
+> — *Netec S4, 2:13:19-2:13:58*
+
+> Concrete fan-out worked example (Lab 5): an image uploaded to S3 triggers an S3 event notification → SNS fans that out to two paths → two different Lambda functions each resize the image differently ("mobile" and "thumbnail") → each result is written back into a folder in the same S3 bucket → all Lambda execution activity is visible via CloudWatch Logs.
+>
+> — *Netec S4, 3:26:41-3:28:29*

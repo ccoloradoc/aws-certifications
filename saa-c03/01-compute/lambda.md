@@ -31,3 +31,33 @@ Not covered in the base cheat sheet at all — serverless compute is core to SAA
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Lambda framed via contrast with EC2: "serverless" doesn't mean no infrastructure exists, it means you don't manage/administer the servers — AWS runs the uploaded code and you pay only for execution time, not continuous uptime. Described as event-driven/reactive rather than continuously running.
+>
+> — *Netec S2, 2:37:16-2:38:15, 2:38:22-2:38:50*
+
+> Execution limits restated live: up to 15 minutes max execution, up to 10GB memory.
+>
+> — *Netec S2, 2:39:41-2:39:56*
+
+> Event sources named directly as examples: CloudWatch alarms/monitoring, error detection, a DynamoDB table query, a security-related event, an object uploaded to S3.
+>
+> — *Netec S2, 2:40:41-2:41:14*
+
+> Use-case framing: backend processing for websites/mobile apps, data processing, AI/ML-adjacent workflows. Deployment options: write code directly (multiple languages) or deploy via container image.
+>
+> — *Netec S2, 2:41:28-2:41:46, 2:41:56-2:42:10*
+
+> Integration example: a Lambda function connecting to an AI model (e.g. Amazon Bedrock) to process a user query and return a response, optionally authenticated via API Gateway or Cognito, integrated with a frontend built in Amplify.
+>
+> — *Netec S2, 2:42:36-2:43:22*
+
+> Function configuration includes verifying/testing performance, monitoring via CloudWatch logs for errors, defining trigger origins, and defining permissions — explicitly tied back to IAM roles (a Lambda calling Bedrock needs a role permitting that specific access).
+>
+> — *Netec S2, 2:43:33-2:44:35*
+
+> Lab-derived console UI mechanic: when creating a Lambda function, the "use a default execution role" option is offered first; choosing a specific pre-existing IAM role instead requires expanding a collapsed "Change default execution role" section — easy to miss.
+>
+> — *Netec S4, 3:46:50-3:49:07*

@@ -21,3 +21,13 @@ The base cheat sheet only mentioned Snowcone as a DataSync destination — the r
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Snow Family framed as the offline transfer option — physical devices shipped by AWS, used to copy data locally then physically returned to AWS for upload; used when network transfer isn't fast/available enough for the data volume.
+>
+> — *Netec S3, 35:51-36:37*
+
+> AWS Snowcone capacity confirmed directly as ~8TB. Snowball named (without further specs) as the option for larger migrations.
+>
+> — *Netec S3, 36:46-36:54, 36:54-37:12*

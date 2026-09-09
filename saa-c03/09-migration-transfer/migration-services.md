@@ -11,6 +11,24 @@
 
 <!-- Your own notes go here. -->
 
+### From Netec live training (to review)
+
+> AWS DataSync: online (network-based) data-transfer tool; requires installing an agent (on-prem or in the cloud) that reads from a source (e.g. NFS, SMB) and transfers encrypted data to AWS; supports incremental sync, verifies data integrity during transfer, supports scheduling/automation. Source/destination pairs named: on-prem NFS/SMB → S3, EFS, or FSx. Contrasted with Storage Gateway: Storage Gateway uses an appliance as the bridge, DataSync uses an agent configured with an explicit source and destination and discrete transfer tasks.
+>
+> — *Netec S3, 32:52-34:41, 34:09-34:26, 34:50-35:05*
+
+> AWS Transfer Family named directly: transfers files into/out of AWS using traditional protocols like FTP/SFTP, functioning like a managed FTP server in front of AWS storage.
+>
+> — *Netec S3, 23:52-24:11, 35:14-35:36*
+
+> AWS DMS keeps the source database available/running during migration — called out as a key benefit; supports continuous replication to keep source and target in sync during a cutover window, works across different or the same database engines, and supports a full one-time load, ongoing change replication, or a combination of both.
+>
+> — *Netec S3, 1:51:11-1:53:41*
+
+> AWS Schema Conversion Tool (SCT) named directly: converts schemas between different/heterogeneous database engines (e.g. on-prem SQL Server → RDS) as part of a migration.
+>
+> — *Netec S3, 1:54:13-1:55:14*
+
 ### From slides (pages 271-420)
 
 - **AWS Transfer Family** — fully managed FTP/FTPS/SFTP endpoint in front of S3 or EFS; scalable, reliable, Multi-AZ; pay per provisioned endpoint-hour + data transfer; stores user credentials itself or integrates with AD/LDAP/Okta/Cognito/custom auth; use cases: file sharing, public datasets, CRM/ERP integration

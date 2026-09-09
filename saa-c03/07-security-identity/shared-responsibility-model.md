@@ -11,3 +11,9 @@ Foundational security concept not covered in the base cheat sheet — expect thi
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Using a cloud provider "transfers" physical/infrastructure security risk to AWS — AWS's own advanced physical controls and standards cover the data-center layer, no longer the customer's job. Explicitly tied back to the Shared Responsibility Model taught in Cloud Practitioner.
+>
+> — *Netec S1, 53:51-55:01, 1:24:19*

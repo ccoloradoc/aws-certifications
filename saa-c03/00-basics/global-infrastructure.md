@@ -39,3 +39,25 @@ Four building blocks: **Regions**, **Availability Zones**, **Data Centers**, and
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> AWS global infrastructure hierarchy stated explicitly: Data Center → Availability Zone → Region, all interconnected globally.
+>
+> — *Netec S1, 59:50-1:03:06*
+
+> Region selection isn't random — factors are data sovereignty/legal/privacy requirements (e.g. EU citizen data rules), proximity/latency to users, whether the services you need are actually live there yet, and cost. Flagged as near-certain exam scenario wording (e.g. "data sovereignty" or "reduce latency" as the clue pointing to region selection).
+>
+> — *Netec S1, 1:04:22-1:09:12*
+
+> Deploying the same resource (e.g. EC2) across multiple AZs keeps the service running if one AZ fails — called a near-guaranteed implicit exam reference (a scenario won't literally ask "what is an AZ" but assumes you know a multi-AZ resource survives one AZ's failure).
+>
+> — *Netec S1, 47:04, 1:14:08-1:17:42*
+
+> Global vs. regional services: EC2 is regional (benefits from AZ redundancy); IAM is global (not tied to a region).
+>
+> — *Netec S1, 1:02:36-1:03:06*
+
+> Documentation pointer: check infrastructure.aws / AWS docs for the current list of active regions, services available per region, and regional feature availability.
+>
+> — *Netec S1, 1:10:56-1:11:24*

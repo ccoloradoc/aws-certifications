@@ -39,3 +39,21 @@
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Caching framed generally: caching frequently-accessed data reduces direct database load, improves application performance, and can reduce cost. Lazy Loading walked through step by step: app checks cache first, on a miss queries the DB and writes the result back to cache — noted that cache storage is not unlimited, so a combination of strategies (including expiration) is recommended rather than relying on lazy loading alone. Write-through named as an alternative: the app writes to cache in parallel with the database rather than only populating on a miss.
+>
+> — *Netec S3, 1:39:58-1:40:36, 1:41:06-1:43:16, 1:43:25-1:44:13*
+
+> TTL explained as the automatic-expiration mechanism needed regardless of caching pattern, since cache storage is finite — data is stored with a timestamp and evicted once TTL elapses; applies to both DynamoDB and ElastiCache.
+>
+> — *Netec S3, 1:44:20-1:45:50*
+
+> ElastiCache named directly as the managed in-memory caching service — can accelerate response times from milliseconds down to microseconds, reduces DB query load, reduces cost by cutting direct DB hits. Redis named as an engine option with advanced capabilities (replication, HA, session management, advanced data structures). Memcached named as a simpler alternative engine for basic caching.
+>
+> — *Netec S3, 1:45:50-1:46:52, 1:46:58-1:47:36, 1:47:44-1:47:53*
+
+> DynamoDB Accelerator (DAX) named directly as a caching layer purpose-built and fully integrated for DynamoDB specifically (distinct from general-purpose ElastiCache) — reduces DynamoDB read latency from milliseconds to microseconds by automatically caching reads; a query checks DAX first, falls back to DynamoDB on a miss and then populates the cache.
+>
+> — *Netec S3, 1:48:08-1:49:43*

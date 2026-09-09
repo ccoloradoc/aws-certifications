@@ -72,3 +72,85 @@ An ENI is what a security group and an IP address actually attach to — see the
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Historical framing: AWS compute evolved from "access to physical racks" toward a virtualization layer you provision directly from the console/API, without lower-level hardware management.
+>
+> — *Netec S2, 2:06:18-2:07:03*
+
+> For the Architect Associate exam, the compute focus is stated as primarily EC2, EBS, and Lambda.
+>
+> — *Netec S2, 2:07:37-2:07:53*
+
+> EC2 launch configuration walked through field by field: name/tags, AMI selection, instance type/size (chosen for capability needs), key pair for SSH vs. Session Manager as the safer alternative (avoids permanently exposing a port to the internet, reduces brute-force attack surface). Instance creation also requires VPC, subnet, public-IP auto-assign choice, and security group.
+>
+> — *Netec S2, 2:09:41-2:12:59, 2:13:18-2:13:58*
+
+> EBS is explicitly grouped under "compute" (not purely storage) because it's the disk volume attached to an instance — OS and data volumes both configurable at launch; lifecycle actions: delete, stop, hibernate; multi-AZ HA configuration options also mentioned.
+>
+> — *Netec S2, 2:13:58-2:14:50*
+
+> User Data: an OS-dependent script uploaded at launch time that runs automatically when the instance boots (e.g. auto-install a web server) so the instance "arrives" already configured.
+>
+> — *Netec S2, 2:14:58-2:15:42*
+
+> Tags/metadata can mark an instance as production/test, used for tracking, search filtering, and especially cost tracking by tag.
+>
+> — *Netec S2, 2:16:08-2:16:47*
+
+> AMIs described as templates — AWS-provided, your own custom AMI built from a configured instance (to avoid reconfiguring standard/security settings every time), or sourced from AWS Marketplace (third-party vendor AMIs, e.g. a security appliance, directly launchable).
+>
+> — *Netec S2, 2:16:55-2:18:52*
+
+> EC2 Image Builder named directly as the AWS-managed service for maintaining a custom-AMI pipeline — version and reuse a "template" for future launches, avoiding rework.
+>
+> — *Netec S2, 2:24:36-2:24:56*
+
+> Instance-type selection framed with a consumer-hardware analogy: choosing an EC2 instance type is like choosing a laptop/PC — general use needs modest specs, gaming/large databases need much more; picking the wrong type wastes money or under-serves the workload.
+>
+> — *Netec S2, 2:20:07-2:21:31*
+
+> Instance type naming convention: family class (workload it's optimized for) + generation number + additional properties (e.g. processor type) + size after the dot.
+>
+> — *Netec S2, 2:21:42-2:22:06*
+
+> Instance families with use cases: General Purpose (balanced, most default use cases); Memory Optimized (large in-memory data sets, DB servers); Compute Optimized (CPU-heavy, critical/high-performance apps, ML); Storage Optimized (large local databases, high I/O).
+>
+> — *Netec S2, 2:22:46-2:24:12*
+
+> AWS Compute Optimizer named directly as a rightsizing/cost tool — checks whether the chosen instance type/size is over- or under-utilized.
+>
+> — *Netec S2, 2:25:44-2:26:06*
+
+> Tenancy: shared by default (normal in a multi-tenant cloud); dedicated instance isolates hardware at the account level; dedicated host goes further, giving a specific physical server you fully control (including bringing your own licenses) — relevant for regulated industries with strict compliance/security requirements.
+>
+> — *Netec S2, 2:26:22-2:28:40*
+
+> Placement Groups explained conceptually as logical organization of instances (separate from physical tenancy): Cluster (instances that mostly talk to each other, for performance), Spread (reduce correlated hardware failure across a distributed system), Partition (system aware of instance topology across partitions).
+>
+> — *Netec S2, 2:28:44-2:30:15*
+
+> User Data and instance metadata both named as sources of information collectible from a running instance — metadata includes instance ID, IP addresses, usable within applications.
+>
+> — *Netec S2, 2:30:15-2:31:08*
+
+> EBS volume types recap: general purpose (SSD or magnetic, cheaper), higher-performance SSD/premium disks optimized for I/O throughput for production, magnetic/cold-storage disks for infrequently accessed data — explicit reminder that disk performance (not just CPU/memory/network) affects application performance. Cost warning: unattached/leftover EBS volumes still bill for storage even if unused.
+>
+> — *Netec S2, 2:32:14-2:33:42, 2:33:42-2:34:08*
+
+> EC2 purchasing options recap: On-Demand (quick tests/unpredictable traffic), Reserved Instances/Savings Plans (1-3yr commitment, stable/predictable workloads), Spot Instances (auction-style, up to ~90% discount, but can be interrupted/reclaimed — explicitly flagged as not suitable for workloads requiring high availability).
+>
+> — *Netec S2, 2:34:41-2:36:54*
+
+> Horizontal scaling (scale-out/scale-in): add more instances to handle increased demand (e.g. a ticket sale event), then scale back in once demand subsides — the flexibility the cloud provides over fixed on-prem capacity. Vertical scaling: increase/decrease the capacity (CPU, storage, etc.) of a single resource, contrasted with horizontal.
+>
+> — *Netec S3, 3:27:52-3:29:24, 3:29:31-3:29:54*
+
+> Launch Template: captures the configuration you'd otherwise set launching an individual instance (AMI, instance type, etc.), reused so every instance launched from it is identically configured. Auto Scaling Group: instances following a launch template placed into a group with minimum/desired/maximum capacity; if an instance fails, the group relaunches a replacement; can integrate with a load balancer and span multiple AZs for resilience.
+>
+> — *Netec S3, 3:30:20-3:30:49, 3:31:04-3:31:47*
+
+> Scaling policy types: manual, scheduled (anticipate a known recurring demand pattern, e.g. a payroll system, and pre-emptively scale up), dynamic/reactive (based on a live metric like CPU usage), and predictive (learns a baseline usage pattern over time and proactively scales ahead of anticipated demand, requiring historical data first).
+>
+> — *Netec S3, 3:31:52-3:34:53*

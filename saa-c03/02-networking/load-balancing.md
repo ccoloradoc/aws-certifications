@@ -90,3 +90,17 @@ Controls whether a load balancer node in one AZ can distribute requests to targe
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Load balancing framed as necessary beyond "having enough resources" — distributing incoming requests across resources and avoiding bottlenecks is a distinct architectural concern. ALB named as the most commonly implemented type, operating at the application layer, most typical for web apps. NLB and layer-4/transport-layer balancing named as an alternative.
+>
+> — *Netec S3, 3:22:04-3:22:56, 3:22:12-3:22:27, 3:22:27-3:22:40*
+
+> Target Groups explained as the destination config (EC2 instances or IP addresses). Listeners explained mechanically: listen on a specific port/protocol, apply configured rules, forward matching traffic to a target group — used by both ALB and NLB. ALB path-based routing example: routing to different target groups by destination (API path vs. web-app path), targets could be EC2, Lambda, or containers.
+>
+> — *Netec S3, 3:23:11-3:23:27, 3:23:45-3:25:05, 3:25:27-3:25:59*
+
+> Gateway Load Balancer named directly, framed for transparently inserting a network security appliance into the traffic path.
+>
+> — *Netec S3, 3:26:30-3:26:54*

@@ -47,3 +47,45 @@
 - Amazon EKS: managed Kubernetes control plane; alternative to ECS with a different (cloud-agnostic) API — good fit if you're already running Kubernetes on-prem or elsewhere; deploy one cluster per region for multi-region; logs/metrics via CloudWatch Container Insights
   - Node types: Managed Node Groups (EKS creates/manages an ASG of EC2 nodes for you, On-Demand or Spot), Self-Managed Nodes (you create/register nodes yourself, can use the EKS-Optimized AMI, ASG-managed), or Fargate (no nodes to manage at all)
   - Data volumes need a CSI-compliant driver + a StorageClass manifest; supports EBS, EFS (works with Fargate), FSx for Lustre, and FSx for NetApp ONTAP
+
+### From Netec live training (to review)
+
+> Elastic Beanstalk introduced by direct contrast with CloudFormation: less infrastructure control but a much simpler experience — upload code (Git or ZIP) and AWS provisions/runs a fitting environment, without you defining the underlying resources explicitly. Still runs on real infrastructure (e.g. EC2) underneath, but you don't manage that layer directly — though you can configure some redundancy options (single vs. multiple instances, load balancer, auto scaling). Configuration inputs: the application "container," the environment (dev/test/production), and the platform.
+>
+> — *Netec S4, 52:37-55:41, 54:40-55:04, 56:06-56:40*
+
+> Beanstalk use cases: rapid deployment without managing a VPC or EC2 directly; migrating an existing app with minimal redesign by matching an existing supported platform (e.g. a Java app onto Tomcat, a .NET app onto Windows/.NET); quickly standing up an MVP/proof-of-concept. Can integrate with SQS and other AWS services within the app's runtime environment.
+>
+> — *Netec S4, 57:45-58:48, 57:11-57:19*
+
+> Decoupling motivation: tightly coupled systems mean a failure in one component (e.g. payment service) can take down the whole app; decoupling (e.g. via a queue between app and payment service) means a failure in one part leaves the rest still (partially) functioning. Monolithic vs. microservices: microservices split an app into independent, decoupled components that can each be deployed/scaled/updated independently, potentially with their own datastore. Explicit caveat: microservices are not automatically the right answer for everything — added complexity/tooling/cost depending on team maturity; monolithic isn't inherently "bad."
+>
+> — *Netec S4, 2:12:33-2:14:06, 2:15:02-2:18:20, 2:16:06-2:19:21*
+
+> Containers vs. VMs: a container is lighter than a VM because it doesn't need a full guest OS — just a runtime engine plus the app's dependencies; a VM needs a hypervisor plus a full guest OS per instance. Running Docker manually inside an EC2 instance is possible but scaling becomes hard because containers are then bounded by that one instance's capacity — why AWS offers dedicated container-orchestration services.
+>
+> — *Netec S4, 2:20:34-2:24:26, 2:24:54-2:26:19*
+
+> Exam heuristic restated: prefer the managed-service answer — a container-orchestration service over self-managing Docker on EC2, because it needs less low-level administration.
+>
+> — *Netec S4, 2:26:19-2:27:34*
+
+> Container image explained as the container's equivalent of an AMI — a packaged, reusable, layered bundle (base OS layer, runtime, app code, dependencies). Registry (ECR) explained as the storage/versioning layer for images, compared directly to a Git repository. Private repository (default) is access-restricted via IAM with vulnerability scanning; public repository is openly pullable, similar in spirit to Docker Hub — public image galleries (AWS's own included) are a source of pre-built base images.
+>
+> — *Netec S4, 2:28:59-2:30:09, 2:30:16-2:31:00, 2:32:50-2:36:19, 2:36:27-2:37:54, 2:39:15-2:39:51*
+
+> ECS described mechanically: a cluster (group of resources) runs services, defined by task definitions (a template specifying container image, CPU/memory, env vars — analogous to how an AMI+instance-type defines an EC2 launch), and a task is a running instance of a task definition. ECS integrates with the registry, Route 53 for service discovery, IAM, CloudWatch Logs, and load balancers.
+>
+> — *Netec S4, 2:41:07-2:43:41, 2:44:11-2:44:26, 2:45:51*
+
+> EKS described as the equivalent orchestration option for teams already using/preferring Kubernetes — AWS manages the Kubernetes control plane, reducing operational complexity while staying Kubernetes-compatible. Guidance: new to containers → ECS is more approachable; existing Kubernetes experience or multi-cloud-portability need → EKS fits better. "ECS/EKS Anywhere" named for running these platforms on-premises too.
+>
+> — *Netec S4, 2:47:06-2:48:51, 2:49:24-2:49:56, 2:52:50-2:53:09*
+
+> Repeated exam heuristic: "minimal operational effort / not managing infrastructure" → Fargate; "server control required" → EC2 (as a launch type) — flagged as a frequently tested distinction.
+>
+> — *Netec S4, 2:51:44-2:53:43*
+
+> Series of live container exam scenarios: (1) need scalability/availability, do not want to manage/provision infrastructure → Fargate (class initially leaned ECS/EKS-on-EC2 before correcting toward Fargate specifically); (2) on-prem containerized app, growing load, must move to AWS with minimal code/effort changes → ECS + Fargate + a load balancer; (3) on-prem containerized app, high volume, needs HA + minimal operational effort → ECR + ECS + Fargate, doubling as an "eliminate unnecessary-effort answers" drill (hosting your own registry when ECR exists, or building a custom AMI when unneeded, both flagged as wrong); (4) stateless workloads that can tolerate interruptions, minimize cost and operational load → Spot Instances + EKS/ECS — "supports interruptions" rules out On-Demand and points to Spot, "containers" points away from a raw EC2 ASG.
+>
+> — *Netec S4, 2:54:01-2:56:44, 2:56:46-2:58:44, 2:58:46-3:01:39, 3:01:49-3:05:46*

@@ -27,3 +27,29 @@ Cross-cutting framework that underlies how exam questions are worded ("optimize 
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> The Well-Architected Framework exists so architects don't reinvent the wheel — a documented, structured checklist behind every "how do I build this correctly" question.
+>
+> — *Netec S1, 1:21:11-1:22:00*
+
+> Pillars relevant to daily design questions: Security, Reliability, Performance Efficiency, Cost Optimization, Operational Excellence — cost optimization specifically called "always embedded," not an afterthought.
+>
+> — *Netec S1, 1:22:00-1:22:39, 56:22-57:20*
+
+> The Framework isn't abstract — it directly maps to design questions like "should I protect the root account" or "should I use multiple AZs," each belonging to a specific pillar (security vs. reliability vs. performance).
+>
+> — *Netec S1, 1:29:42-1:30:11*
+
+> Security pillar example content named directly: security design principles, traceability/monitoring, identity/infrastructure protection practices, threat detection.
+>
+> — *Netec S1, 1:30:42-1:31:13*
+
+> AWS Well-Architected Tool workflow: select a workload → answer structured questions per pillar → save → get a report/recommendations; state is trackable over time to show improvement/drift.
+>
+> — *Netec S1, 1:29:06-1:35:16*
+
+> AWS Well-Architected Labs: a separate, hands-on practice environment — reference architectures you implement yourself in your own account (not a course lab sandbox), tiered by difficulty per pillar.
+>
+> — *Netec S1, 1:35:41-1:36:53*

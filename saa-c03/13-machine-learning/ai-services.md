@@ -74,3 +74,9 @@ No domain folder previously existed for this — the slide deck's own table of c
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Amazon Q named directly as AWS's generative-AI assistant, integrated as an assistant experience within the AWS ecosystem. Amazon Q Developer named as the developer-focused variant: an in-IDE chat assistant helping with code generation, code explanation, applying security best practices during implementation, and debugging assistance. Framed as accelerating how fast new applications can be built while helping bake in security from earlier development phases rather than bolting it on later.
+>
+> — *Netec S4, 1:21:19-1:21:38, 1:21:38-1:22:15, 1:22:15-1:22:48*

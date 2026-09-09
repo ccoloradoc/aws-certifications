@@ -195,3 +195,105 @@ AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global v
 - Use private IPs over public IPs for both performance and cost savings; same-AZ traffic is cheapest (but sacrifices multi-AZ resilience)
 - Egress (outbound) traffic is the expensive direction — ingress is typically free; keep traffic inside AWS where possible, and co-locate Direct Connect in the same region as your resources to cut egress costs
 - A Gateway VPC Endpoint (free) vs. a NAT Gateway (hourly + per-GB) for reaching S3/DynamoDB is a common cost-optimization exam scenario — prefer the Gateway Endpoint
+
+### From Netec live training (to review)
+
+> Lab-framed VPC recap: a public subnet (e.g. web tier) needs its route table pointed at an Internet Gateway for outbound/inbound internet access, while a private subnet (e.g. database tier) does not.
+>
+> — *Netec S1, 3:46:05-3:47:14*
+
+> VPC IP-address planning framed as forward-looking architect work: not just "what do I need now" but planning for future growth and potential hybrid-connectivity needs (Direct Connect, VPN) even if not needed today.
+>
+> — *Netec S2, 44:46-46:07*
+
+> A VPC is scoped to exactly one Region — called a near-certain implicit exam reference: questions won't ask this directly as a standalone fact, but it's baked into scenario wording almost every time. Confirmed live in a true/false quiz: "a single VPC can span multiple regions" → False.
+>
+> — *Netec S2, 47:39-48:25, 1:32:01-1:32:20*
+
+> A VPC gets one CIDR block sized according to planned resource count and growth; subnets are a subset of that CIDR block, and can be public or private.
+>
+> — *Netec S2, 48:33-49:13, 49:13-50:15*
+
+> Reserved IPs per subnet reiterated (network address, VPC router, DNS, reserved for future use, broadcast) — framed as "not optional, plan around it as an architect."
+>
+> — *Netec S2, 50:33-52:45*
+
+> A subnet is not public by default just because you call it that — it becomes public only once an Internet Gateway is attached to the VPC and the subnet's route table is updated to point at it. Called out as a common exam trap. Confirmed live in quiz Q&A: "what makes a subnet public?" → attaching + routing, not just labeling.
+>
+> — *Netec S2, 53:23-54:56, 1:32:28-1:33:08*
+
+> Best practice: create a route table per subnet rather than relying on the VPC's single default/main route table, so each subnet's outbound path can be controlled independently.
+>
+> — *Netec S2, 54:56-55:20, 1:02:16-1:02:33*
+
+> An Internet Gateway must be created separately and explicitly attached to a VPC — it doesn't exist automatically.
+>
+> — *Netec S2, 55:22-55:29*
+
+> A private subnet has no route to the internet by default; if it needs outbound access (e.g. software updates), the connection must be NAT'd and must originate from inside the private subnet — inbound-initiated connections are not allowed.
+>
+> — *Netec S2, 55:53-57:10*
+
+> NAT Gateway function: allows outbound internet access initiated from a private subnet without allowing inbound-initiated connections; commonly placed in the public subnet, with the private subnet's route table pointing to it. Confirmed again in the practice quiz.
+>
+> — *Netec S2, 56:35-57:10, 1:33:15-1:33:46*
+
+> Exam heuristic: when a scenario could use either a self-managed NAT-on-EC2 solution or a managed NAT Gateway, the expected answer leans toward the managed service whenever the question emphasizes reducing operational overhead/maintenance over raw configurability.
+>
+> — *Netec S2, 1:03:43-1:05:09*
+
+> The Default VPC exists per Region automatically, pre-configured with an Internet Gateway and usable subnets — recommended only for quick tests, not for anything deliberately architected.
+>
+> — *Netec S2, 1:00:39-1:01:21*
+
+> Elastic IPs avoid re-provisioning costs when swapping an IP between instances (e.g. reattach a failed instance's Elastic IP to its replacement and traffic keeps flowing); public IPv4 addresses carry an explicit cost.
+>
+> — *Netec S2, 1:05:09-1:05:49*
+
+> An ENI is described as a virtual network card — retains public/private IPs, MAC address, etc.; can be detached from one instance and reattached to another for fast failover without changing the service's networking identity.
+>
+> — *Netec S2, 1:06:00-1:06:31*
+
+> Live quiz confirmed: the tool for traffic-filtering rules at the subnet level is the Network ACL; a new security group has no inbound ports open by default, all outbound allowed.
+>
+> — *Netec S2, 1:34:00-1:34:30, 1:34:38-1:35:09*
+
+> NACLs operate at the subnet level and are stateless — explained via an airport-security analogy (checked both entering and leaving, doesn't "remember" you): both inbound and outbound rules must be configured explicitly for a round trip to work, since permitting one direction doesn't implicitly permit the response. Rules have an explicit priority/order — lower number evaluated first and takes precedence. Configured per subnet, can be reused across multiple subnets.
+>
+> — *Netec S2, 1:07:53-1:10:16, 1:11:02-1:11:36, 1:12:17-1:13:48*
+
+> Security Groups operate at the interface/instance level and are stateful — explained via an event-wristband analogy (once let in, you can leave and re-enter without re-checking): a connection initiated in one direction automatically permits the return traffic. Default behavior: block all inbound, allow all outbound.
+>
+> — *Netec S2, 1:14:03-1:16:11, 1:17:02-1:17:16*
+
+> Exam-critical summary: Security Group = interface level + stateful; NACL = subnet level + stateless.
+>
+> — *Netec S2, 1:18:31-1:19:33*
+
+> Worked 3-tier security-group-chaining example: web-tier SG allows inbound 443 from the internet; app-tier SG allows inbound only from the web-tier SG (referencing the SG itself, not an IP range); db-tier SG allows inbound only from the app-tier SG — so no tier but the adjacent one can ever reach the next, without hardcoding IP ranges. Flagged as a classic exam scenario ("how do you receive web traffic but keep app/db layers isolated").
+>
+> — *Netec S2, 1:20:39-1:23:26*
+
+> Live Q&A follow-up: does this SG-chaining pattern fully protect the inner tiers? Answer: it reduces exposure (only the web tier faces the internet) but isn't a substitute for defense-in-depth — apply hardening, a WAF, load balancers, etc. at every tier regardless, since zero-trust means no tier is assumed "safe" just because it's internal.
+>
+> — *Netec S2, 1:24:02-1:26:21*
+
+> Defense-in-depth reinforced with a network diagram: a NACL at the subnet boundary can allow port 80, while an individual instance's Security Group can still independently block port 80 for that instance — multiple independent layers, neither replacing the other.
+>
+> — *Netec S2, 1:27:33-1:28:40*
+
+> Framed as "Networks 2" (vs. session 2's "Networks 1" covering what happens inside a VPC) — this module covers what happens as your network grows beyond a single VPC's boundary: connecting to other VPCs, and reaching AWS services privately without the public internet. VPC Endpoint motivation: normally reaching an AWS service (e.g. S3) from inside a VPC means routing out through the Internet Gateway over the public internet — a VPC Endpoint instead lets VPC resources reach AWS services via AWS's own private backbone, without an Internet Gateway at all.
+>
+> — *Netec S4, 3:06:06-3:06:53, 3:07:34-3:08:23*
+
+> Gateway Endpoint: supports only S3 and DynamoDB; configured via the subnet's route table pointing at the service's prefix; no additional cost for the endpoint itself. Interface Endpoint: works for many more services via AWS PrivateLink, creates an ENI inside the VPC/subnet, supports Security Groups, carries an additional cost. Exam heuristic: reducing cost + S3/DynamoDB specifically → Gateway Endpoint; a different service or no cost emphasis → Interface Endpoint. PrivateLink also usable for shared/cross-account/cross-org services privately, not just AWS's own (CloudWatch, SQS, SNS given as example Interface-Endpoint-compatible services).
+>
+> — *Netec S4, 3:09:39-3:11:52, 3:10:26-3:12:01, 3:13:16-3:13:27, 3:14:48-3:14:55, 3:14:55-3:15:05, 3:15:19-3:15:59*
+
+> VPC Peering explained mechanically: connects two VPCs privately over AWS's backbone (no public internet, no VPN needed) so they communicate as if on the same network; requires route table configuration on both sides. Requirements/limitations: the two VPCs' CIDR blocks must not overlap; peering is not transitive (A↔B and B↔C peered does not let A reach C through B — an explicit A↔C connection is required) — flagged as a classic exam question. Can be established same-region or cross-region, same-account or cross-account; requires a connection request and acceptance.
+>
+> — *Netec S4, 3:16:24-3:18:07, 3:18:32-3:19:28, 3:19:38-3:23:25*
+
+> Peering use case: shared-services VPC pattern — a central VPC hosting services shared across dev/prod or business units, reachable via peering from each consumer VPC. Scaling limitation explicitly flagged: as VPC count grows, a full-mesh peering topology grows required connections exponentially and becomes unmanageable at scale — instructor teased "a better solution for this exists" without naming it this session (implying a hub-and-spoke alternative like Transit Gateway).
+>
+> — *Netec S4, 3:20:08-3:20:45, 3:21:44-3:22:24*

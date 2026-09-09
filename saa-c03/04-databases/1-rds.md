@@ -58,3 +58,25 @@ Applies to both RDS and Aurora.
 ## Notes
 
 <!-- Your own notes go here. -->
+
+### From Netec live training (to review)
+
+> Managed-service framing restated for databases: self-hosting a DB engine on EC2 means owning all scaling/HA/security concerns and the full operational burden; a managed service like RDS provides the config/update layer so you don't administer the DB engine at a low level — called a likely exam pattern (scenario mentions a managed service vs. self-managed instance → pick the managed service). Engine compatibility restated: MySQL, PostgreSQL, Oracle (and others). Deployment options: traditional provisioned instances vs. serverless (auto-provisions capacity).
+>
+> — *Netec S3, 58:50-1:00:25, 1:02:08-1:02:15, 1:02:23-1:02:50*
+
+> Multi-AZ deployment explained mechanically: a primary instance plus a standby in another AZ; every write is confirmed only once both instances have the data (synchronous replication) — this is why failover can happen almost instantly with effectively no data loss (barring edge cases: a failure at the exact commit moment, an app-level bug, human error). If the primary fails, the standby is automatically promoted — a fast, simple mechanism enabled with a single toggle. Explicitly tied to RTO improvement.
+>
+> — *Netec S3, 1:05:09-1:07:18, 1:05:09-1:07:33, 1:05:32-1:05:50*
+
+> Read Replicas explained mechanically: asynchronous replication (some lag exists), replicas are read-only, and — critically — promoting a read replica to standalone/primary is a manual action (or requires your own automation), unlike Multi-AZ's automatic failover. Purpose is explicitly read-scaling/performance, not high availability — can be cross-region, e.g. for reporting/analytics or reducing latency for distributed read traffic.
+>
+> — *Netec S3, 1:07:51-1:08:02, 1:11:19-1:11:52, 1:08:10-1:10:47*
+
+> Direct comparison flagged as a common exam question: Multi-AZ = synchronous, automatic failover, HA/no-data-loss framing; Read Replica = asynchronous, manual promotion, read-scaling/performance framing — and they're not mutually exclusive (a read replica can itself be Multi-AZ). Exam-wording heuristic: "no data loss"/"automatic failover" → Multi-AZ; "scale reads"/"heavy read load"/"improve read performance" → Read Replica.
+>
+> — *Netec S3, 1:10:54-1:13:50, 1:12:38-1:13:18*
+
+> RDS runs inside a VPC, protected via Security Groups, with a public-access toggle, and supports encryption via KMS with different keys per instance.
+>
+> — *Netec S3, 1:13:50-1:14:51*
