@@ -11,6 +11,13 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - VPC Peering routes traffic directly between two VPCs
 - Transit Gateway acts as a central hub for many VPCs (see [hybrid-connectivity.md](hybrid-connectivity.md))
 
+## IP Addressing
+
+- **Public IP** — unique across the whole internet, easily geo-located
+- **Private IP** — unique only within its own private network (two different private networks can reuse the same range); reaches the internet via NAT + internet gateway
+- **Elastic IP** — a public IPv4 you own until you release it; attach to one instance at a time; masks instance failure by remapping to a healthy instance; capped at 5 per account (increasable)
+  - Generally avoid overusing them — often a sign of poor architecture; prefer a DNS name or a Load Balancer instead of a static public IP
+
 ## Subnet Types
 
 ### Public Subnets
@@ -45,46 +52,46 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - **ENA** — enhanced networking adapter
 - **EFA** — elastic fabric adapter, for HPC
 
-## Security Groups vs. Network ACLs
+## Elastic Network Interfaces (ENI)
 
-| Feature | Security Group | NACL |
+- A logical component representing a virtual network card inside a VPC — this is the actual object a security group attaches to (see [What can have a security group?](#what-can-have-a-security-group) below), and the thing the ENI table below is really checking for
+- Attributes an ENI can carry:
+  - One primary private IPv4 address, plus one or more secondary private IPv4 addresses
+  - Up to one Elastic IP (IPv4) per private IPv4 address it holds
+  - One public IPv4 address
+  - One or more security groups
+  - A MAC address
+- Can be created independently of any instance, then attached/detached and moved between EC2 instances on the fly — a common pattern for building failover (move the ENI, and its IPs/MAC/SG move with it, to a standby instance)
+- Bound to a specific Availability Zone — an ENI created in one AZ cannot be attached to an instance in a different AZ
+
+### What can be assigned an ENI?
+
+The flip side of [What can have a security group?](#what-can-have-a-security-group) below in the Security Groups section: whether a component provisions an ENI at all is the real gate — SG support just follows from it. Most rows match that table exactly, but a few components get an ENI **without** exposing a configurable SG on it, and a couple of "networking" constructs are NOT ENI-based despite sounding like they should be.
+
+| Component | Gets an ENI? | Notes |
 |---|---|---|
-| Level | Instance | Subnet |
-| Rules | Allow only; stateful | Allow/Deny; stateless |
-| Evaluation | All rules together | In order |
-| Default inbound | Deny (custom); Allow (default) | Deny |
-| Default outbound | Allow all | Allow all (default VPC) |
+| EC2 instances | Yes | Primary ENI at launch; additional ENIs (secondary, different subnet/AZ within the same AZ as the instance) can be attached/detached on the fly |
+| RDS / Aurora, ElastiCache, Redshift, RDS Proxy, FSx, MSK brokers, DocumentDB/Neptune, WorkSpaces | Yes | Same as the SG table — managed services provision an ENI per node/instance in your VPC/subnet |
+| Lambda functions | Yes, if VPC-attached | The ENI is how a VPC-attached Lambda reaches RDS/ElastiCache/internal resources; see [lambda.md](../01-compute/lambda.md) |
+| SageMaker notebooks/endpoints | Yes, if VPC-attached | — |
+| Client VPN endpoints | Yes | Associates an ENI per subnet it's targeted at |
+| ALB / CLB | Yes | One or more ENIs per AZ/subnet the load balancer spans |
+| **NAT Gateway** | **Yes** | Gets an ENI with a private IP (and an associated Elastic IP) — but unlike a NAT Instance, AWS manages it and exposes **no configurable SG** on it (hence "No" in the [What can have a security group?](#what-can-have-a-security-group) table despite having an ENI) |
+| Interface VPC Endpoints (PrivateLink) | Yes | The ENI is the entry point that gets the private IP |
+| EFS Mount Targets | Yes | One ENI per AZ |
+| AWS Directory Service (Managed Microsoft AD) | Yes | Creates ENIs directly in your VPC subnets |
+| **Route 53 Resolver Endpoints** (Inbound/Outbound) | Yes | Each endpoint provisions ENIs in your chosen subnets — see the Hybrid DNS notes below |
+| **Transit Gateway VPC attachments** | Yes | One ENI per subnet/AZ the attachment uses |
+| Network Load Balancer (NLB) | Yes | Gets an ENI per AZ (with a static IP) even though it traditionally has no SG of its own — traffic passes through to the targets |
+| Gateway Load Balancer (GWLB) | Yes | ENI-backed like NLB, operating below the SG layer |
+| Gateway VPC Endpoints (S3/DynamoDB) | **No** | Route-table target only — no ENI, no IP in your subnet |
+| Internet Gateway / Egress-Only Internet Gateway | **No** | Horizontally scaled, redundant logical construct — not attached as an ENI |
+| Virtual Private Gateway (VGW) | **No** | Terminates the VPN tunnel at the VPC edge, not as an ENI inside a subnet |
+| VPC Peering connection | **No** | Pure route-table construct between two VPCs — no ENI on either side |
+| Direct Connect Virtual Interface (VIF) | **No** | Operates at the DX connection level, outside any single VPC's ENIs |
+| Elastic IP | **No** | An IP address that gets *attached to* an ENI, not an ENI itself |
 
-## Notes
-
-<!-- Your own notes go here. -->
-
-AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global vs. region-scoped services, how to choose a Region) has moved to [00-basics/global-infrastructure.md](../00-basics/global-infrastructure.md) — it's foundational vocabulary the whole course assumes, not VPC-specific, even though it directly drives the "VPCs map to Regions, subnets map to AZs" rule in Core Concepts above.
-
-### From slides (pages 1-120)
-
-- Public IP — unique across the whole internet, easily geo-located
-- Private IP — unique only within its own private network (two different private networks can reuse the same range); reaches the internet via NAT + internet gateway
-- Elastic IP — a public IPv4 you own until you release it; attach to one instance at a time; masks instance failure by remapping to a healthy instance; capped at 5 per account (increasable)
-  - Generally avoid overusing them — often a sign of poor architecture; prefer a DNS name or a Load Balancer instead of a static public IP
-
-### CIDR & VPC sizing (from slides, pages 571-720)
-
-- CIDR = a base IP + a subnet mask (`/0`-`/32`) defining a range; quick memo: `/32` = 1 IP, `/24` = last octet varies (256 IPs), `/16` = last 2 octets vary (65,536 IPs), `/8` = last 3 octets vary, `/0` = every IP
-- Private IPv4 ranges (IANA): `10.0.0.0/8`, `172.16.0.0/12` (AWS's default VPC range), `192.168.0.0/16` (typical home networks) — everything else is public
-- Per region: up to 5 VPCs (soft limit); each VPC can have up to 5 CIDR blocks, each sized between `/28` (16 IPs) and `/16` (65,536 IPs); VPC CIDRs must come from the private ranges above and shouldn't overlap other networks you'll connect to (e.g. corporate)
-- Every subnet reserves 5 IPs AWS keeps for itself (network address, VPC router, DNS mapping, future use, broadcast) — e.g. for `10.0.0.0/24`: `.0`, `.1`, `.2`, `.3`, `.255` are unusable. Exam tip: needing 29 usable IPs requires at least a `/26` (64 - 5 = 59 ≥ 29), since a `/27` (32 - 5 = 27) falls short
-- Internet Gateway: horizontally scaled, HA by design, created separately from the VPC, 1:1 with a VPC — but attaching it alone does nothing until route tables are also updated to point at it
-- Default VPC exists in every new account; instances launched without a specified subnet land here, get a public IPv4 by default, and get both public and private DNS names
-
-### Bastion Hosts & NAT (from slides, pages 571-720)
-
-- Bastion Host: sits in a public subnet to let you SSH into private-subnet instances; its SG allows inbound 22 from a restricted CIDR (e.g. your corporate IP); the target instances' SG must allow the bastion's SG (or private IP) in turn
-- NAT Instance (legacy, still testable): an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound)
-- NAT Gateway: AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
-- Regional NAT Gateway (RNAT) — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
-
-### Security Groups fundamentals (from slides, pages 1-120 — previously missed)
+## Security Groups
 
 - The fundamental unit of network security in AWS; control inbound/outbound traffic to/from an EC2 instance; contain only rules (no explicit deny); rules can reference an IP range or another security group
 - Regulate: which ports are open, which IP ranges (IPv4/IPv6) are authorized, and inbound vs. outbound direction independently
@@ -95,9 +102,19 @@ AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global v
 - Defaults: all inbound traffic blocked, all outbound traffic allowed
 - Classic ports to know: 22 = SSH (Linux login), 21 = FTP, 22 = SFTP (file transfer over SSH), 80 = HTTP, 443 = HTTPS, 3389 = RDP (Windows login)
 
-#### What can have a security group?
+### Security Groups vs. Network ACLs
 
-The unifying rule: a security group attaches to an **ENI**, so anything that provisions an ENI inside your VPC can have one. That covers far more than just EC2.
+| Feature | Security Group | NACL |
+|---|---|---|
+| Level | Instance | Subnet |
+| Rules | Allow only; stateful | Allow/Deny; stateless |
+| Evaluation | All rules together | In order |
+| Default inbound | Deny (custom); Allow (default) | Deny |
+| Default outbound | Allow all | Allow all (default VPC) |
+
+### What can have a security group?
+
+The unifying rule: a security group attaches to an **ENI**, so anything that provisions an ENI inside your VPC can have one. That covers far more than just EC2. See [What can be assigned an ENI?](#what-can-be-assigned-an-eni) above for the ENI-assignment flip side of this table.
 
 | Component | Has its own SG? | Notes |
 |---|---|---|
@@ -127,44 +144,27 @@ The unifying rule: a security group attaches to an **ENI**, so anything that pro
 | Internet Gateway | No | No ENI of its own |
 | Elastic IP | No | An IP address, not a network interface itself (it's attached *to* something that has an ENI/SG) |
 
-#### Elastic Network Interface (ENI) fundamentals (from slides, pages 61-90)
+## Notes
 
-- A logical component representing a virtual network card inside a VPC — this is the actual object a security group attaches to, and the thing every row in both tables above is really being checked for
-- Attributes an ENI can carry:
-  - One primary private IPv4 address, plus one or more secondary private IPv4 addresses
-  - Up to one Elastic IP (IPv4) per private IPv4 address it holds
-  - One public IPv4 address
-  - One or more security groups
-  - A MAC address
-- Can be created independently of any instance, then attached/detached and moved between EC2 instances on the fly — a common pattern for building failover (move the ENI, and its IPs/MAC/SG move with it, to a standby instance)
-- Bound to a specific Availability Zone — an ENI created in one AZ cannot be attached to an instance in a different AZ
+<!-- Your own notes go here. -->
 
-#### What can be assigned an ENI?
+AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global vs. region-scoped services, how to choose a Region) has moved to [00-basics/global-infrastructure.md](../00-basics/global-infrastructure.md) — it's foundational vocabulary the whole course assumes, not VPC-specific, even though it directly drives the "VPCs map to Regions, subnets map to AZs" rule in Core Concepts above.
 
-The flip side of the table above: whether a component provisions an ENI at all is the real gate — SG support just follows from it. Most rows match the SG table exactly, but a few components get an ENI **without** exposing a configurable SG on it, and a couple of "networking" constructs are NOT ENI-based despite sounding like they should be.
+### CIDR & VPC sizing (from slides, pages 571-720)
 
-| Component | Gets an ENI? | Notes |
-|---|---|---|
-| EC2 instances | Yes | Primary ENI at launch; additional ENIs (secondary, different subnet/AZ within the same AZ as the instance) can be attached/detached on the fly |
-| RDS / Aurora, ElastiCache, Redshift, RDS Proxy, FSx, MSK brokers, DocumentDB/Neptune, WorkSpaces | Yes | Same as the SG table — managed services provision an ENI per node/instance in your VPC/subnet |
-| Lambda functions | Yes, if VPC-attached | The ENI is how a VPC-attached Lambda reaches RDS/ElastiCache/internal resources; see [lambda.md](../01-compute/lambda.md) |
-| SageMaker notebooks/endpoints | Yes, if VPC-attached | — |
-| Client VPN endpoints | Yes | Associates an ENI per subnet it's targeted at |
-| ALB / CLB | Yes | One or more ENIs per AZ/subnet the load balancer spans |
-| **NAT Gateway** | **Yes** | Gets an ENI with a private IP (and an associated Elastic IP) — but unlike a NAT Instance, AWS manages it and exposes **no configurable SG** on it (hence "No" in the SG table above despite having an ENI) |
-| Interface VPC Endpoints (PrivateLink) | Yes | The ENI is the entry point that gets the private IP |
-| EFS Mount Targets | Yes | One ENI per AZ |
-| AWS Directory Service (Managed Microsoft AD) | Yes | Creates ENIs directly in your VPC subnets |
-| **Route 53 Resolver Endpoints** (Inbound/Outbound) | Yes | Each endpoint provisions ENIs in your chosen subnets — see the Hybrid DNS notes below |
-| **Transit Gateway VPC attachments** | Yes | One ENI per subnet/AZ the attachment uses |
-| Network Load Balancer (NLB) | Yes | Gets an ENI per AZ (with a static IP) even though it traditionally has no SG of its own — traffic passes through to the targets |
-| Gateway Load Balancer (GWLB) | Yes | ENI-backed like NLB, operating below the SG layer |
-| Gateway VPC Endpoints (S3/DynamoDB) | **No** | Route-table target only — no ENI, no IP in your subnet |
-| Internet Gateway / Egress-Only Internet Gateway | **No** | Horizontally scaled, redundant logical construct — not attached as an ENI |
-| Virtual Private Gateway (VGW) | **No** | Terminates the VPN tunnel at the VPC edge, not as an ENI inside a subnet |
-| VPC Peering connection | **No** | Pure route-table construct between two VPCs — no ENI on either side |
-| Direct Connect Virtual Interface (VIF) | **No** | Operates at the DX connection level, outside any single VPC's ENIs |
-| Elastic IP | **No** | An IP address that gets *attached to* an ENI, not an ENI itself |
+- CIDR = a base IP + a subnet mask (`/0`-`/32`) defining a range; quick memo: `/32` = 1 IP, `/24` = last octet varies (256 IPs), `/16` = last 2 octets vary (65,536 IPs), `/8` = last 3 octets vary, `/0` = every IP
+- Private IPv4 ranges (IANA): `10.0.0.0/8`, `172.16.0.0/12` (AWS's default VPC range), `192.168.0.0/16` (typical home networks) — everything else is public
+- Per region: up to 5 VPCs (soft limit); each VPC can have up to 5 CIDR blocks, each sized between `/28` (16 IPs) and `/16` (65,536 IPs); VPC CIDRs must come from the private ranges above and shouldn't overlap other networks you'll connect to (e.g. corporate)
+- Every subnet reserves 5 IPs AWS keeps for itself (network address, VPC router, DNS mapping, future use, broadcast) — e.g. for `10.0.0.0/24`: `.0`, `.1`, `.2`, `.3`, `.255` are unusable. Exam tip: needing 29 usable IPs requires at least a `/26` (64 - 5 = 59 ≥ 29), since a `/27` (32 - 5 = 27) falls short
+- Internet Gateway: horizontally scaled, HA by design, created separately from the VPC, 1:1 with a VPC — but attaching it alone does nothing until route tables are also updated to point at it
+- Default VPC exists in every new account; instances launched without a specified subnet land here, get a public IPv4 by default, and get both public and private DNS names
+
+### Bastion Hosts & NAT (from slides, pages 571-720)
+
+- Bastion Host: sits in a public subnet to let you SSH into private-subnet instances; its SG allows inbound 22 from a restricted CIDR (e.g. your corporate IP); the target instances' SG must allow the bastion's SG (or private IP) in turn
+- NAT Instance (legacy, still testable): an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound)
+- NAT Gateway: AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
+- Regional NAT Gateway (RNAT) — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
 
 ### NACLs in depth (from slides, pages 721-870)
 

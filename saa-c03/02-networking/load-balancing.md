@@ -33,6 +33,14 @@ The logical grouping of backend destinations a load balancer actually routes to 
 - Cookie source: an app-generated cookie, or a load-balancer-generated cookie (ALB uses `AWSALB`/`AWSALBAPP`)
 - Trade-off: can unbalance load across backends, since "sticky" clients keep hitting the same target regardless of its current load
 
+## Connection Draining / Deregistration Delay
+
+When an instance is being deregistered from a load balancer (unhealthy, ASG scale-in, or manually removed), the LB immediately stops sending it *new* requests but lets any already-in-flight requests finish for a grace period before force-closing the connection — avoids abruptly cutting off a user mid-request.
+
+- **CLB** calls this "Connection Draining"; **ALB/NLB** call the identical mechanism "Deregistration Delay" (configured per target group, not per load balancer — see Target Groups above)
+- Configurable window: 1–3600 seconds, default 300s; can be disabled entirely (set to 0)
+- Set it **low** for short-lived requests (so scale-in/deregistration completes faster); set it **higher** for long-running requests (so they don't get cut off)
+
 ## Cross-Zone Load Balancing
 
 Controls whether a load balancer node in one AZ can distribute requests to targets registered in a *different* AZ, instead of only targets in its own AZ.

@@ -8,7 +8,7 @@ Not mentioned in the base cheat sheet, despite individual services (EBS Data Lif
 - Backup plans and lifecycle rules (transition to cold storage, expiration)
 - Cross-region and cross-account backup copying
 - Backup vaults and vault lock (compliance mode)
-- How this consolidates what was previously scattered per-service (compare with [ebs-instance-store.md](../03-storage/ebs-instance-store.md) and [rds-aurora.md](../04-databases/rds-aurora.md))
+- How this consolidates what was previously scattered per-service (compare with [ebs-instance-store.md](../03-storage/ebs-instance-store.md) and [rds.md](../04-databases/1-rds.md))
 
 ## Answers (from slides, pages 721-870)
 
@@ -17,6 +17,7 @@ Not mentioned in the base cheat sheet, despite individual services (EBS Data Lif
 - Supports cross-region and cross-account backup copies, and PITR where the underlying service supports it
 - **Backup Plans** define: frequency (every 12h, daily, weekly, monthly, or a cron expression), a backup window, on-demand or scheduled triggers, tag-based selection of which resources to back up, transition-to-cold-storage timing, and retention period
 - **Backup Vault Lock** — enforces WORM on everything in a vault: blocks deletion and blocks shortening/altering retention periods, even for the root user, once enabled — a hard compliance guarantee beyond a normal IAM Deny
+  - **Exam scenario**: you need long-term backups of an Aurora database for disaster recovery and audit purposes. Fix: use **AWS Backup** with a Backup Plan set to a long retention period, with cross-region copy for DR — Aurora's own automated backups only retain up to 35 days, so anything longer needs AWS Backup (or manual snapshots kept indefinitely); enable **Backup Vault Lock** to make the backups immutable, satisfying the audit requirement
 
 ## Notes
 
