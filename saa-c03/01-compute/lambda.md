@@ -11,7 +11,7 @@ Not covered in the base cheat sheet at all — serverless compute is core to SAA
 - Lambda layers
 - VPC-attached Lambda (ENI cost, NAT requirements for internet access)
 - Event source mappings (SQS, Kinesis, DynamoDB Streams)
-- Lambda@Edge vs. CloudFront Functions (see [content-delivery.md](../02-networking/content-delivery.md))
+- Lambda@Edge vs. CloudFront Functions (see [cloudfront-and-global-accelerator.md](../02-networking/cloudfront-and-global-accelerator.md))
 - Step Functions integration (see [orchestration.md](../06-application-integration/orchestration.md))
 - Pricing model (requests + duration)
 
@@ -25,7 +25,7 @@ Not covered in the base cheat sheet at all — serverless compute is core to SAA
 - **Lambda SnapStart** (Java/Python/.NET) — up to 10x faster starts at no extra cost by invoking from a pre-initialized, cached snapshot (memory+disk state) taken when you publish a new version
 - VPC-attached Lambda: by default Lambda runs outside your VPC and can't reach RDS/ElastiCache/internal ELBs; attaching it requires specifying VPC/subnets/security groups, and Lambda creates an ENI in your subnet to reach those resources
 - Lambda + RDS Proxy: putting RDS Proxy in front of a database avoids connection exhaustion from many concurrent Lambda invocations; the Lambda function must itself be VPC-attached since RDS Proxy is never public
-- Lambda@Edge vs CloudFront Functions — see [content-delivery.md](../02-networking/content-delivery.md) for the full comparison
+- Lambda@Edge vs CloudFront Functions — see [cloudfront-and-global-accelerator.md](../02-networking/cloudfront-and-global-accelerator.md) for the full comparison
 - Step Functions — see [orchestration.md](../06-application-integration/orchestration.md)
 
 ## Notes

@@ -1,6 +1,6 @@
 # KMS — Deep Dive
 
-Follow-up to the CMK basics in [encryption.md](encryption.md) — the base cheat sheet didn't go past naming the key types.
+Follow-up to the CMK basics mentioned in [s3.md](../03-storage/s3.md)'s Client-Side Encryption bullet — the base cheat sheet didn't go past naming the key types.
 
 ## To research
 

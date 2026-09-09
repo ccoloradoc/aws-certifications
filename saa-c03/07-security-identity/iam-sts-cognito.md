@@ -17,7 +17,7 @@
 - Audit tools:
   - **IAM Credentials Report** (account-level) — lists all users and the status of their credentials
   - **IAM Access Advisor** (user-level) — shows granted permissions and last-accessed time, useful for trimming policies
-- Best practices: don't use root except for account setup; one physical user = one IAM user; assign permissions via groups, not individual users; enforce a strong password policy + MFA; use roles for AWS services; use access keys only for CLI/SDK; audit regularly; never share IAM users or access keys
+- Best practices: don't use root except for account setup; lock or delete the root user's access keys; one physical user = one IAM user; assign permissions via groups, not individual users; enforce a strong password policy + MFA; use roles for AWS services; use access keys only for CLI/SDK, never hardcode/store them in code or an S3 bucket; audit regularly; never share IAM users or access keys
 
 ## AWS STS (Security Token Service)
 

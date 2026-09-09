@@ -51,6 +51,7 @@ Controls whether a load balancer node in one AZ can distribute requests to targe
 
 ## SSL/TLS Certificates
 
+- Data in motion (data moving over the network) is encrypted with SSL/TLS over HTTPS (port 443) — this is what a load balancer terminates
 - A load balancer uses an X.509 cert, managed via ACM or self-uploaded, to terminate SSL/TLS
 - SNI (Server Name Indication) lets a single listener serve multiple certs/domains — works on ALB, NLB, and CloudFront, but **not** on CLB (which is why CLB needs one cert per hostname)
 
