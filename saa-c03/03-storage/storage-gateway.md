@@ -1,12 +1,42 @@
 # AWS Storage Gateway
 
-- Replaces on-premises storage without changing existing workflows
+## Overview
+
+- Bridge between on-premises data and cloud data — replaces on-premises storage without changing existing workflows
+- The reason it exists: S3 is a proprietary storage technology (unlike EFS/NFS), so Storage Gateway is what exposes S3 data on-premises
+- Use cases: disaster recovery, backup & restore, tiered storage, on-premises cache & low-latency file access
+- Stores data in S3, and provides a low-latency local cache (compared to going direct to EFS/EBS)
 - **Types**:
   - **File Gateway** — NFS/SMB access
   - **Volume Gateway** — block storage (iSCSI)
   - **Tape Gateway** — virtual tape library for backup software
-- Stores data in S3
-- Provides a low-latency local cache (compared to going direct to EFS/EBS)
+- Deployment options: VM (VMware, Hyper-V, KVM) or a hardware appliance
+
+## File Gateway
+
+- Configured S3 buckets are accessible using the NFS and SMB protocols
+- Most recently used data is cached locally in the file gateway
+- Supports S3 Standard, Standard-IA, One Zone-IA, and Intelligent-Tiering; transition to Glacier via an S3 Lifecycle policy
+- Bucket access is granted via an IAM role per File Gateway
+- SMB integrates with Active Directory (AD) for user authentication
+
+## Volume Gateway
+
+- Block storage using the iSCSI protocol, backed by S3
+- Backed by EBS snapshots, which can help restore on-premises volumes
+- **Cached volumes** — low-latency access to most-recently-used data; the primary dataset lives in AWS
+- **Stored volumes** — the entire dataset stays on-premises, with scheduled backups to S3
+
+## Tape Gateway
+
+- For companies with existing physical-tape backup processes — Tape Gateway lets them keep the same workflows, but in the cloud
+- Virtual Tape Library (VTL) backed by S3 and Glacier
+- Uses an iSCSI interface, and works with leading backup software vendors
+
+## Integrations
+
+- **AWS Backup** supports Storage Gateway (Volume Gateway specifically), with cross-region and cross-account backups
+- Appears in AWS's DR-tips guidance as one of the standard on-premises → AWS backup/replication bridges, alongside Snowball (see [snow-family.md](../09-migration-transfer/snow-family.md))
 
 ## Notes
 
@@ -34,10 +64,4 @@
 >
 > — *Netec S3, 30:23-30:56, 31:22-31:53*
 
-### From slides (pages 271-420)
-
-- Use cases: DR, backup & restore, tiered storage, on-prem cache/low-latency access — the bridge for exposing S3's proprietary storage on-premises (unlike EFS/NFS)
-- S3 File Gateway: exposes S3 buckets over NFS/SMB, caches most-recently-used data locally; supports Standard, Standard-IA, One Zone-IA, Intelligent-Tiering (transition to Glacier via lifecycle policy); IAM role per gateway for bucket access; SMB integrates with Active Directory
-- Volume Gateway: block storage over iSCSI, backed by S3 (via EBS snapshots, so on-prem volumes are restorable) — Cached volumes (low-latency access to recent data, rest in S3) vs. Stored volumes (full dataset kept on-prem, scheduled S3 backups)
-- Tape Gateway: Virtual Tape Library backed by S3 + Glacier, iSCSI interface, integrates with existing tape backup software/workflows
-- Deployment options: VM (VMware, Hyper-V, KVM) or hardware appliance
+Content sourced from slide deck, pages 361-390 and 781-810.
