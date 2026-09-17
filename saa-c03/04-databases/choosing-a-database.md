@@ -2,9 +2,7 @@
 
 Not covered in the base cheat sheet — the slides frame database selection as a decision framework, then cover several specialized NoSQL databases with no other home in these notes.
 
-## From slides (pages 421-570)
-
-### Decision factors
+## Decision Factors
 
 - Workload shape: read-heavy / write-heavy / balanced? Throughput needs, and do they fluctuate?
 - Data volume/growth, average object size, access pattern, retention needs
@@ -13,16 +11,16 @@ Not covered in the base cheat sheet — the slides frame database selection as a
 - Data model: joins? structured vs. semi-structured? need a strong schema vs. flexibility?
 - License costs — could a cloud-native DB (e.g. Aurora) reduce them?
 
-### Database categories
+## Database Categories
 
-- **RDBMS (SQL/OLTP)** — RDS, Aurora — best when you need joins
-- **NoSQL** (no joins/SQL) — DynamoDB (JSON-like), ElastiCache (key/value), Neptune (graphs), DocumentDB (MongoDB-compatible), Keyspaces (Cassandra-compatible)
-- **Object Store** — S3 (large objects), Glacier (backup/archive)
-- **Data Warehouse (SQL analytics/BI)** — Redshift (OLAP), Athena, EMR
-- **Search** — OpenSearch — free-text/unstructured search on JSON
-- **Graph** — Neptune — relationships between data
+- **RDBMS (SQL/OLTP)** — [RDS](1-rds.md), [Aurora](2-aurora.md) — best when you need joins
+- **NoSQL** (no joins/SQL) — [DynamoDB](dynamodb.md) (JSON-like), [ElastiCache](4-elasticache.md) (key/value), [Neptune](#amazon-neptune) (graphs), [DocumentDB](#amazon-documentdb) (MongoDB-compatible), [Keyspaces](#amazon-keyspaces-for-apache-cassandra) (Cassandra-compatible)
+- **Object Store** — [S3](../03-storage/s3.md) (large objects), [Glacier](../03-storage/glacier.md) (backup/archive)
+- **Data Warehouse (SQL analytics/BI)** — [Redshift](../05-analytics/redshift-athena.md) (OLAP), [Athena](../05-analytics/redshift-athena.md), [EMR](../05-analytics/streaming-and-big-data.md)
+- **Search** — [OpenSearch](../05-analytics/streaming-and-big-data.md) — free-text/unstructured search on JSON
+- **Graph** — [Neptune](#amazon-neptune) — relationships between data
 - **Ledger** — Amazon Quantum Ledger Database (QLDB)
-- **Time series** — Amazon Timestream
+- **Time series** — [Timestream](#amazon-timestream)
 
 ## Specialized Databases
 
@@ -56,3 +54,5 @@ Not covered in the base cheat sheet — the slides frame database selection as a
 ## Notes
 
 <!-- Your own notes go here. -->
+
+Content sourced from slide deck, pages 421-570.

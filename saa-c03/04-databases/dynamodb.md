@@ -2,9 +2,15 @@
 
 - Key/value store for high-throughput, millisecond-latency workloads
 - Not compatible with relational data models
+- Fully managed, multi-AZ replicated NoSQL database with transaction support; single-digit millisecond performance at massive scale (millions of requests/sec, trillions of rows, 100s of TB); IAM-integrated security; no maintenance/patching
 - No native read replicas — use **DAX** (DynamoDB Accelerator) for caching
 - Measures **RCUs** (read capacity units/sec) and **WCUs** (write capacity units/sec)
-- Auto-scaling via Application Auto Scaling
+- **Capacity modes**: Provisioned (plan RCU/WCU ahead of time, optional auto-scaling via Application Auto Scaling, cheaper) vs. On-Demand (auto-scales with load, no planning, more expensive, best for unpredictable/spiky workloads)
+
+## Table & Item Structure
+
+- Tables have a Primary Key decided at creation; unlimited items (rows)
+- Items have attributes (nullable, addable over time) up to 400KB total; supports scalar (String/Number/Binary/Boolean/Null), document (List/Map), and set (String/Number/Binary Set) types — schemas can evolve freely
 
 ## Best Practices
 
@@ -12,9 +18,35 @@
 - Separate frequently vs. infrequently accessed data into different tables
 - Use separate tables for timestamp-based access patterns
 
+## Global Tables & Streams
+
+- **Global Tables** — active-active, multi-region: apps can read AND write in any participating region; requires DynamoDB Streams enabled as a prerequisite
+- **DynamoDB Streams** — ordered log of item-level create/update/delete events, 24h retention, limited consumers, processed via Lambda triggers or the DynamoDB Streams Kinesis adapter; use cases: real-time reactions (welcome emails), analytics, populating derivative tables, cross-region replication. Kinesis Data Streams is the newer alternative for the same change-capture role: 1 year retention, many more consumers, and works with Lambda/Kinesis Data Analytics/Firehose/Glue Streaming ETL
+
+## DAX (DynamoDB Accelerator)
+
+- Fully managed in-memory cache in front of DynamoDB, microsecond reads, no application code changes needed (same API), default 5-minute TTL; solves read congestion/"hot key" problems
+
+## TTL (Time-to-Live)
+
+- Auto-deletes items past an expiry timestamp attribute; use cases: trimming stored data to only current items, regulatory data-retention limits, web session expiry
+
+## Backups & S3 Integration
+
+- Backups: continuous PITR (optional, up to 35 days, restore creates a new table) vs. on-demand full backups (kept until explicitly deleted, manageable via AWS Backup including cross-region copy) — neither affects live performance
+- **Export to S3** — needs PITR enabled, covers any point in the last 35 days, doesn't consume read capacity, outputs DynamoDB JSON or ION (good for analysis/ETL/audit snapshots)
+- **Import from S3** — accepts CSV/DynamoDB JSON/ION, doesn't consume write capacity, always creates a new table, and logs import errors to CloudWatch Logs
+
+## To research
+
+- Secondary indexes: Global Secondary Index (GSI) vs. Local Secondary Index (LSI)
+- Transactions (`TransactWriteItems` / `TransactGetItems`)
+
 ## Notes
 
 <!-- Your own notes go here. -->
+
+Content sourced from slide deck, pages 421-570.
 
 ### From Netec live training (to review)
 
@@ -41,9 +73,3 @@
 > DynamoDB Global Tables: replicated automatically across multiple regions with no single primary region — every region can read AND write, changes sync automatically across all regions. Use cases: global low-latency gaming/e-commerce apps, disaster recovery with automatic failover across regions.
 >
 > — *Netec S3, 1:37:29-1:39:36*
-
-### From slides (pages 421-570)
-
-- Fully managed, multi-AZ replicated NoSQL database with transaction support; single-digit millisecond performance at massive scale (millions of requests/sec, trillions of rows, 100s of TB); IAM-integrated security; no maintenance/patching
-- Tables have a Primary Key decided at creation; unlimited items (rows); items have attributes (nullable, addable over time) up to 400KB total; supports scalar (String/Number/Binary/Boolean/Null), document (List/Map), and set (String/Number/Binary Set) types — schemas can evolve freely
-- Capacity modes: Provisioned (plan RCU/WCU ahead of time, optional auto-scaling, cheaper) vs. On-Demand (auto-scales with load, no planning, more expensive, best for unpredictable/spiky workloads)

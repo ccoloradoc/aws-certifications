@@ -13,8 +13,8 @@ Use this as your study checklist: pick a row, go to the file, fill in the gap yo
 | Savings Plans vs. Reserved Instances flexibility trade-off (direct comparison) | [12-cost-optimization/cost-management-tools.md](12-cost-optimization/cost-management-tools.md) | Both are individually covered in [ec2.md](01-compute/ec2.md), but not compared head-to-head |
 | Lambda layers | [01-compute/lambda.md](01-compute/lambda.md) | — |
 | Event source mappings — poll-based (SQS, Kinesis, DynamoDB Streams) vs. push-based invocation model | [01-compute/lambda.md](01-compute/lambda.md) | Concurrency/pricing/cold-starts/VPC are covered; this mechanism isn't |
-| DynamoDB GSI vs. LSI | [04-databases/dynamodb-advanced.md](04-databases/dynamodb-advanced.md) | — |
-| DynamoDB Transactions (`TransactWriteItems` / `TransactGetItems`) | [04-databases/dynamodb-advanced.md](04-databases/dynamodb-advanced.md) | — |
+| DynamoDB GSI vs. LSI | [04-databases/dynamodb.md](04-databases/dynamodb.md) | — |
+| DynamoDB Transactions (`TransactWriteItems` / `TransactGetItems`) | [04-databases/dynamodb.md](04-databases/dynamodb.md) | — |
 | Partner event buses; EventBridge vs. SNS vs. SQS (when to use which) | [06-application-integration/eventbridge.md](06-application-integration/eventbridge.md) | Event buses (default/custom), rules, targets, and Schema Registry are covered |
 | ACM private certificates (vs. public) | [07-security-identity/acm.md](07-security-identity/acm.md) | Only the public-certificate flow got covered |
 | Envelope encryption (how KMS wraps data keys instead of data) | [07-security-identity/kms-deep-dive.md](07-security-identity/kms-deep-dive.md) | — |
