@@ -1,6 +1,10 @@
 # Amazon API Gateway
 
-- Manages versioning (v1/v2), environments (dev/test/prod), auth, API keys, throttling, request/response transformation & validation, SDK generation, and supports importing from Swagger/OpenAPI
+Main scenario: acting as the "front door" for a serverless REST API — exposing one or more Lambda functions to clients (web/mobile apps, third parties) over HTTP without managing any servers. 
+
+Typical flow: client → API Gateway → Lambda (Lambda integration) → response, with API Gateway handling auth, throttling, request validation/transformation, caching, versioning/staging, and SDK generation around that call. 
+
+Manages versioning (v1/v2), environments (dev/test/prod), auth, API keys, throttling, request/response transformation & validation, SDK generation, and supports importing from Swagger/OpenAPI
 
 ## Throttling & Caching
 

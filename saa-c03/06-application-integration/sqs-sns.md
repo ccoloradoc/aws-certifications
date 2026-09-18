@@ -61,6 +61,8 @@
 
 Content sourced from slide deck, pages 271-420.
 
+> **Persistence**: SQS is durable — messages sit in the queue (up to 14 days retention) until a consumer polls and deletes them, so if no consumer is running, nothing is lost. SNS has no storage — it's push-based broadcast at publish time; if a subscriber isn't listening, that message is gone. This is exactly why the fan-out pattern (SNS → SQS) exists: the SQS queue behind each subscriber supplies the persistence/durability SNS itself lacks.
+
 ### From Netec live training (to review)
 
 > SQS/SNS named directly as the decoupling mechanism for a failing downstream component (e.g. a payment service) not taking down the whole request pipeline — messages simply wait in the queue.
