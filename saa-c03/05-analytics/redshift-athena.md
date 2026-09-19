@@ -7,6 +7,7 @@
 - **Cluster modes**: classic **Provisioned** (pick/reserve instance types in advance for cost savings) or **Serverless** (no capacity to manage)
 - Cluster architecture (Provisioned): leader node (query planning/result aggregation) + compute nodes (execute queries, send results to the leader)
 - Loading data: bulk/large inserts perform much better than row-by-row — load via the `COPY` command from S3 (`copy customer from 's3://mybucket/mydata' iam_role '...'`), or stream in through Kinesis Data Firehose
+- **Enhanced VPC Routing** — forces all `COPY`/`UNLOAD` traffic between the cluster and other repositories (S3, DynamoDB, etc.) through your VPC instead of over the public internet/AWS network path, so it can be controlled with security groups/NACLs/VPC endpoints and audited via VPC Flow Logs *(not covered in the slide deck — general AWS knowledge)*
 - Snapshots: point-in-time, incremental, stored internally in S3; automated every 8h/5GB/schedule (1-35 day retention) or manual (kept until deleted); can auto-copy snapshots (automated or manual) to another region for DR; some cluster configurations support Multi-AZ
 
 ### Redshift Spectrum
