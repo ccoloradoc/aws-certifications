@@ -13,7 +13,7 @@ Not mentioned in the base cheat sheet — increasingly central to event-driven a
 
 ## Answers (from slides, pages 571-720)
 
-See the full write-up in [observability.md](../08-management-governance/observability.md#amazon-eventbridge-from-slides-pages-571-720) — covers event buses/cross-account sharing, Schedule vs. Event Pattern rules, targets, the Schema Registry, and target-permission security (resource-based policy vs. IAM role).
+See the full write-up in [observability.md](../08-management-governance/observability.md#amazon-eventbridge) — covers event buses/cross-account sharing, Schedule vs. Event Pattern rules, targets, the Schema Registry, and target-permission security (resource-based policy vs. IAM role).
 
 ## Notes
 

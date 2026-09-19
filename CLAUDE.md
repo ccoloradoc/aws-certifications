@@ -7,6 +7,7 @@ Personal study notes for AWS certifications (currently just [`saa-c03/`](saa-c03
 - **Base content**: seeded from the [Stellex Group SAA-C03 Cheat Sheet](https://www.stellexgroup.com/blog/aws-solutions-architect-associate-saa-c03-cheat-sheet).
 - **Slide deck**: `AWS Certified Solutions Architect Slides v48.pdf` at the repo root, split and converted page-range-by-page-range into markdown under `converted/` (e.g. `converted/AWS Certified Solutions Architect Slides v48_pages_181-210.md`). When a user request references "the slides" without a page number, grep `converted/` for the relevant heading/keyword to find the right page range — page ranges don't map predictably to topics.
 - Files may carry a `## To research` section for exam-scope gaps the slides/cheat sheet never answered; `saa-c03/open-research-items.md` is the aggregated checklist across all such gaps — when a gap gets filled in a file, remove its row there too.
+- **Official exam guide**: `saa-c03/official-exam-guide.md` captures the official AWS SAA-C03 exam guide verbatim (domains, task statements, knowledge/skills, in-scope/out-of-scope services) — the authority for whether something is actually in scope, since the slide deck/cheat sheet sometimes go beyond or miss it. `saa-c03/exam-guide-mapping.md` cross-references that guide against what's documented here (by task, and by service) — consult it before claiming a service is covered or out of scope, and update it when coverage changes for a service it tracks.
 
 ## Editing conventions for topic files
 
