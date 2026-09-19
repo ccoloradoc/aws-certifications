@@ -23,7 +23,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 
 | Domain | Task | Explicitly-named services/concepts | Coverage | Our files |
 |---|---|---|---|---|
-| **1** (30%) | 1.1 Secure access to AWS resources | IAM, IAM Identity Center, AWS STS, AWS Control Tower, SCPs | ✅ | `iam-sts-cognito.md`, `account-governance.md`, `organizations-control-tower.md` |
+| **1** (30%) | 1.1 Secure access to AWS resources | IAM, IAM Identity Center, AWS STS, AWS Control Tower, SCPs | ✅ | `iam-sts-cognito.md`, `account-governance.md`, `aws-organizations-and-control-tower.md` |
 | **1** (30%) | 1.2 Secure workloads and applications | Cognito, GuardDuty, Macie, Shield, WAF, IAM Identity Center, Secrets Manager, VPN, Direct Connect | ✅ | `waf-shield-firewall-manager.md`, `monitoring-audit.md`, `secrets-management.md`, `hybrid-connectivity.md` — generic "threat vectors" (DDoS/SQLi) concept itself isn't separately explained anywhere |
 | **1** (30%) | 1.3 Data security controls | AWS KMS, ACM | ✅ | `kms-deep-dive.md`, `acm.md`, `aws-backup.md` for backup/replication |
 | **2** (26%) | 2.1 Scalable, loosely coupled architectures | API Gateway, AWS Transfer Family, SQS, Secrets Manager, CDN, ALB, Fargate, Lambda, ECS, EKS, Step Functions | ✅ | `api-gateway.md`, `sqs-sns.md`, `containers-paas.md`, `lambda.md`, `orchestration.md` |
@@ -65,7 +65,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | Service | Status | Our file(s) |
 |---|---|---|
 | Amazon AppFlow | ⚠️ | `11-other-services/misc-managed-services.md` (one-liner) |
-| Amazon EventBridge | ✅ | `06-application-integration/eventbridge.md`, `08-management-governance/observability.md` |
+| Amazon EventBridge | ✅ | `06-application-integration/eventbridge.md` |
 | Amazon MQ | ✅ | `06-application-integration/sqs-sns.md` |
 | Amazon SNS | ✅ | `06-application-integration/sqs-sns.md` |
 | Amazon SQS | ✅ | `06-application-integration/sqs-sns.md` |
@@ -84,7 +84,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 
 | Service | Status | Our file(s) |
 |---|---|---|
-| AWS Batch | ⚠️ | `08-management-governance/observability.md`, `11-other-services/misc-managed-services.md` (passing only) |
+| AWS Batch | ⚠️ | `06-application-integration/eventbridge.md`, `11-other-services/misc-managed-services.md` (passing only) |
 | Amazon EC2 | ✅ | `01-compute/ec2.md` |
 | EC2 Auto Scaling | ✅ | `01-compute/ec2.md` |
 | AWS Elastic Beanstalk | ✅ | `01-compute/containers-paas.md` |
@@ -121,7 +121,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 
 | Service | Status | Our file(s) |
 |---|---|---|
-| AWS X-Ray | ⚠️ | `08-management-governance/observability.md` (one-liner only, no depth) |
+| AWS X-Ray | ⚠️ | `08-management-governance/x-ray.md` (one-liner only, no depth) |
 
 ### Front-End Web and Mobile — Domain 2 (2.1)
 
@@ -153,17 +153,17 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | AWS Auto Scaling (unified) | ⚠️ | mentioned in passing (`containers-paas.md`, `lambda.md`, `dynamodb.md`) but no dedicated cross-service explanation |
 | AWS CLI | ⚠️ | `11-other-services/misc-managed-services.md` (one-liner) |
 | AWS CloudFormation | ✅ | `08-management-governance/cloudformation.md` |
-| AWS CloudTrail | ✅ | `07-security-identity/monitoring-audit.md` |
-| Amazon CloudWatch | ✅ | `08-management-governance/observability.md` |
+| AWS CloudTrail | ✅ | `07-security-identity/cloudtrail.md` |
+| Amazon CloudWatch | ✅ | `08-management-governance/cloudwatch.md` |
 | AWS Compute Optimizer | ⚠️ | `01-compute/ec2.md`, `12-cost-optimization/cost-management-tools.md` (thin — flagged gap) |
-| AWS Config | ✅ | `07-security-identity/monitoring-audit.md` |
-| AWS Control Tower | ✅ | `07-security-identity/organizations-control-tower.md` |
+| AWS Config | ✅ | `07-security-identity/aws-config.md` |
+| AWS Control Tower | ✅ | `07-security-identity/aws-organizations-and-control-tower.md` |
 | AWS Health Dashboard | ❌ | — (known gap) |
 | AWS License Manager | ❌ | — (known gap) |
 | Amazon Managed Grafana | ❌ | — (known gap) |
 | Amazon Managed Service for Prometheus | ❌ | — (known gap) |
 | AWS Management Console | ⚠️ | passing mention only (`iam-sts-cognito.md`) |
-| AWS Organizations | ✅ | `07-security-identity/organizations-control-tower.md`, `account-governance.md` |
+| AWS Organizations | ✅ | `07-security-identity/aws-organizations-and-control-tower.md`, `account-governance.md` |
 | AWS Service Catalog | ❌ | — (known gap) |
 | AWS Systems Manager | ✅ | `08-management-governance/systems-manager.md` |
 | AWS Trusted Advisor | ✅ | `12-cost-optimization/cost-management-tools.md` |
@@ -209,7 +209,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | AWS Certificate Manager (ACM) | ✅ | `07-security-identity/acm.md` |
 | AWS CloudHSM | ⚠️ | `waf-shield-firewall-manager.md`, `s3.md` (passing only) |
 | Amazon Cognito | ✅ | `07-security-identity/iam-sts-cognito.md` |
-| Amazon Detective | ⚠️ | `07-security-identity/organizations-control-tower.md` (single mention, no depth) |
+| Amazon Detective | ⚠️ | `07-security-identity/aws-organizations-and-control-tower.md` (single mention, no depth) |
 | AWS Directory Service | ⚠️ | `07-security-identity/account-governance.md` (passing) |
 | AWS Firewall Manager | ✅ | `07-security-identity/waf-shield-firewall-manager.md` |
 | Amazon GuardDuty | ✅ | `07-security-identity/monitoring-audit.md` |
@@ -218,7 +218,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | AWS KMS | ✅ | `07-security-identity/kms-deep-dive.md` |
 | Amazon Macie | ✅ | `07-security-identity/monitoring-audit.md` |
 | AWS Network Firewall | ✅ | `07-security-identity/waf-shield-firewall-manager.md` |
-| AWS Resource Access Manager (RAM) | ⚠️ | `07-security-identity/organizations-control-tower.md` (one-line seed bullet — known gap) |
+| AWS Resource Access Manager (RAM) | ⚠️ | `07-security-identity/aws-organizations-and-control-tower.md` (one-line seed bullet — known gap) |
 | AWS Secrets Manager | ✅ | `07-security-identity/secrets-management.md` |
 | AWS Security Hub | ⚠️ | `07-security-identity/monitoring-audit.md` (only as an Inspector integration target) |
 | AWS Shield | ✅ | `07-security-identity/waf-shield-firewall-manager.md` |

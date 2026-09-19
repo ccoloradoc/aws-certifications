@@ -1,14 +1,14 @@
 # Account Governance
 
-- **Service Control Policies (SCPs)** — restrict permissions across multiple accounts within an AWS Organization
+## Service Control Policies & IAM Policies
+
 - **IAM policies** — restrict permissions within a single account
+- **Service Control Policies (SCPs)** — restrict permissions across multiple accounts within an AWS Organization; see [aws-organizations-and-control-tower.md](aws-organizations-and-control-tower.md#service-control-policies-scps) for the full mechanics (deny-by-default evaluation, allowlist/blocklist strategies, SCP vs. IAM Permissions Boundary)
 - Accounts can be migrated between AWS Organizations
 
-## Notes
+> Exam-wording cue: SCPs never *grant* permissions on their own — they set the maximum boundary an account (and everything in it, including its root user) can ever do, evaluated on top of whatever IAM policies grant within that account. "Restrict what an entire account/OU can do" → SCP; "grant a user/role permission within one account" → IAM policy.
 
-<!-- Your own notes go here. -->
-
-### IAM policy mechanics (from slides, pages 571-720)
+## IAM Policy Mechanics
 
 - **IAM Roles vs. Resource-Based Policies** for cross-account access: assuming a role means giving up your own permissions for the role's; a resource-based policy (S3 bucket policy, SNS topic, SQS queue) lets the caller keep their own permissions while also being granted access to the resource — useful when, e.g., a user in Account A needs to read Account A's DynamoDB table *and* write to an S3 bucket in Account B without switching roles
 - **IAM Policy Evaluation Logic**: evaluation starts assuming Deny; if any applicable policy has an explicit Deny, that wins immediately; otherwise SCPs, resource policies, and identity policies are all evaluated together — an explicit Allow somewhere along with no explicit Deny results in Allow
@@ -16,12 +16,18 @@
 - S3 permission scope: actions like `s3:ListBucket` apply at the bucket level (`arn:...:bucket-name`); actions like `s3:GetObject`/`PutObject`/`DeleteObject` apply at the object level (`arn:...:bucket-name/*`)
 - `aws:PrincipalOrgID` in a resource policy restricts access to any principal that's a member of a specific AWS Organization
 
-### AWS IAM Identity Center (from slides, pages 571-720)
+## AWS IAM Identity Center
 
 - Successor to AWS SSO — one login for AWS accounts in an Organization, SAML 2.0 business apps (Salesforce, Box, Microsoft 365), and EC2 Windows instances
 - Identity sources: its own built-in identity store, or a 3rd party (Active Directory, OneLogin, Okta)
 - Multi-account access via **Permission Sets** (bundles of IAM policies assigned to users/groups); **Application Assignments** give SSO into SAML apps; **ABAC** grants fine-grained permissions from user attributes (cost center, title, locale) stored in the Identity Store, so access changes just by editing attributes
 - AWS Directory Service options for on-prem AD integration: **AWS Managed Microsoft AD** (your own AD in AWS, can trust on-prem AD), **AD Connector** (proxy redirecting to on-prem AD, users stay managed there), **Simple AD** (AD-compatible but cannot join an on-prem AD)
+
+## Notes
+
+<!-- Your own notes go here. -->
+
+Content sourced from slide deck, pages 571-720.
 
 ### From Netec live training (to review)
 
@@ -57,6 +63,6 @@
 >
 > — *Netec S1, 3:36:15-3:36:46*
 
-> Same SCP → permission-boundary → identity-policy evaluation order reinforced with a second walkthrough in session 2 — see the equivalent blockquotes in [organizations-control-tower.md](organizations-control-tower.md).
+> Same SCP → permission-boundary → identity-policy evaluation order reinforced with a second walkthrough in session 2 — see the equivalent blockquotes in [aws-organizations-and-control-tower.md](aws-organizations-and-control-tower.md).
 >
 > — *Netec S2, 29:07-29:23, 35:14-38:23*

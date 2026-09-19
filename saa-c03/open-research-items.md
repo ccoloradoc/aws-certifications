@@ -19,12 +19,13 @@ Use this as your study checklist: pick a row, go to the file, fill in the gap yo
 | ACM private certificates (vs. public) | [07-security-identity/acm.md](07-security-identity/acm.md) | Only the public-certificate flow got covered |
 | Envelope encryption (how KMS wraps data keys instead of data) | [07-security-identity/kms-deep-dive.md](07-security-identity/kms-deep-dive.md) | — |
 | KMS Grants vs. key policies for temporary/programmatic access | [07-security-identity/kms-deep-dive.md](07-security-identity/kms-deep-dive.md) | — |
-| AWS Resource Access Manager (RAM) — how cross-account resource sharing actually works | [09-migration-transfer/migration-services.md](09-migration-transfer/migration-services.md) | Still just the one-line seed bullet; [organizations-control-tower.md](07-security-identity/organizations-control-tower.md) points here for it |
+| AWS Resource Access Manager (RAM) — how cross-account resource sharing actually works | [09-migration-transfer/migration-services.md](09-migration-transfer/migration-services.md) | Still just the one-line seed bullet; [aws-organizations-and-control-tower.md](07-security-identity/aws-organizations-and-control-tower.md) points here for it |
 | AWS Snowcone specs/use case | [09-migration-transfer/snow-family.md](09-migration-transfer/snow-family.md) | Snowball Edge (both variants) is covered in detail |
 | AWS Snowmobile (exabyte-scale) | [09-migration-transfer/snow-family.md](09-migration-transfer/snow-family.md) | — |
 | SSM State Manager (maintaining defined config state on instances) | [08-management-governance/systems-manager.md](08-management-governance/systems-manager.md) | Session Manager, Run Command, Patch Manager, Automation are covered |
 | Concrete RTO/RPO numbers AWS DRS targets | [10-resilience-dr/elastic-disaster-recovery.md](10-resilience-dr/elastic-disaster-recovery.md) | Mechanism (continuous block-level replication) is covered, specific target numbers aren't |
 | Each Well-Architected pillar's specific design principles; how exam wording maps to a pillar | [well-architected-framework.md](well-architected-framework.md) | Only the cross-pillar general guiding principles + the Well-Architected Tool got covered |
+| Segments/subsegments/traces, service maps, sampling rules, X-Ray SDK/daemon instrumentation | [08-management-governance/x-ray.md](08-management-governance/x-ray.md) | Entire file — one-line seed mention only, no slide coverage |
 
 ## Gaps found against the official AWS exam guide
 
@@ -34,7 +35,6 @@ The rows above came from cross-checking this repo's own "To research" markers. T
 |---|---|---|
 | Amazon Detective | [07-security-identity/monitoring-audit.md](07-security-identity/monitoring-audit.md) | Zero coverage — pairs naturally with GuardDuty/Inspector/Macie already there |
 | AWS Security Hub | [07-security-identity/monitoring-audit.md](07-security-identity/monitoring-audit.md) | Only mentioned as an Inspector integration target, never covered as its own service |
-| AWS X-Ray | [08-management-governance/observability.md](08-management-governance/observability.md) | Only a one-line seed mention ("distributed tracing") — no depth on segments, traces, service maps, sampling |
 | AWS Client VPN | [02-networking/hybrid-connectivity.md](02-networking/hybrid-connectivity.md) | Only appears as rows in the ENI/SG tables in vpc.md — what it is and how it's configured is never explained |
 | AWS Cost and Usage Report (CUR) | [12-cost-optimization/cost-management-tools.md](12-cost-optimization/cost-management-tools.md) | Zero coverage; official exam guide lists it alongside Cost Explorer/Budgets |
 | AWS Data Exchange | 05-analytics/ (no existing file) | Zero coverage |
@@ -43,8 +43,8 @@ The rows above came from cross-checking this repo's own "To research" markers. T
 | Amazon Device Farm | [11-other-services/misc-managed-services.md](11-other-services/misc-managed-services.md) | Zero coverage |
 | AWS Health Dashboard | 08-management-governance/ (no existing file) | Zero coverage |
 | AWS License Manager | 08-management-governance/ (no existing file) | Zero coverage |
-| Amazon Managed Grafana; Amazon Managed Service for Prometheus | [08-management-governance/observability.md](08-management-governance/observability.md) | Zero coverage — natural fit alongside CloudWatch/X-Ray |
-| AWS Service Catalog | [07-security-identity/organizations-control-tower.md](07-security-identity/organizations-control-tower.md) | Zero coverage — governance-adjacent to Organizations/Control Tower |
+| Amazon Managed Grafana; Amazon Managed Service for Prometheus | [08-management-governance/cloudwatch.md](08-management-governance/cloudwatch.md) | Zero coverage — natural fit alongside CloudWatch/X-Ray |
+| AWS Service Catalog | [07-security-identity/aws-organizations-and-control-tower.md](07-security-identity/aws-organizations-and-control-tower.md) | Zero coverage — governance-adjacent to Organizations/Control Tower |
 | Amazon Kinesis Video Streams | [05-analytics/streaming-and-big-data.md](05-analytics/streaming-and-big-data.md) | Zero coverage — natural fit alongside Kinesis Data Streams/Firehose |
 | AWS Artifact | [07-security-identity/](07-security-identity/) (no existing file) | Zero coverage — compliance report access |
 | "Immutable infrastructure" as a design concept | [10-resilience-dr/disaster-recovery.md](10-resilience-dr/disaster-recovery.md) | Named explicitly in Domain 2's task statement, not covered anywhere |

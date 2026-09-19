@@ -16,8 +16,8 @@ Study notes organized by AWS service domain.
 - [`04-databases/`](04-databases/) — RDS (+ RDS Proxy), Aurora, DynamoDB, ElastiCache, and a decision framework for choosing a database
 - [`05-analytics/`](05-analytics/) — Redshift, Athena, Kinesis (+ MSK, Managed Service for Apache Flink), Glue & Lake Formation, OpenSearch, QuickSight, EMR
 - [`06-application-integration/`](06-application-integration/) — SQS, SNS, API Gateway, Step Functions, EventBridge
-- [`07-security-identity/`](07-security-identity/) — KMS, IAM, STS, Cognito, GuardDuty, CloudTrail, Shared Responsibility Model, Secrets Manager, WAF/Shield, Organizations, ACM
-- [`08-management-governance/`](08-management-governance/) — CloudFormation, CloudWatch, X-Ray, EventBridge, Systems Manager, CI/CD
+- [`07-security-identity/`](07-security-identity/) — KMS, IAM, STS, Cognito, GuardDuty, CloudTrail, AWS Config, Shared Responsibility Model, Secrets Manager, WAF/Shield, Organizations, ACM
+- [`08-management-governance/`](08-management-governance/) — CloudFormation, CloudWatch, X-Ray, Systems Manager, CI/CD
 - [`09-migration-transfer/`](09-migration-transfer/) — DataSync, DMS, SCT, SMS, Snow Family
 - [`10-resilience-dr/`](10-resilience-dr/) — disaster recovery strategies, AWS Backup, Elastic Disaster Recovery
 - [`11-other-services/`](11-other-services/) — miscellaneous managed services, hybrid/edge infrastructure

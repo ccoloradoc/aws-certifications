@@ -11,7 +11,7 @@ The base cheat sheet covered EC2 purchasing options but almost nothing else from
 - **Savings Plans** (Compute vs. EC2 Instance) vs. **Reserved Instances** — flexibility trade-offs (compare with [ec2.md](../01-compute/ec2.md) purchasing options)
 - **Cost Allocation Tags** — attributing spend to teams/projects
 - **AWS Pricing Calculator** — estimating costs before deployment
-- Consolidated billing (see [organizations-control-tower.md](../07-security-identity/organizations-control-tower.md))
+- Consolidated billing (see [aws-organizations-and-control-tower.md](../07-security-identity/aws-organizations-and-control-tower.md))
 
 ## Notes
 
