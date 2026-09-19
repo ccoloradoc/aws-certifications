@@ -22,6 +22,8 @@
 
 - Fully managed data security/privacy service using ML + pattern matching to discover sensitive data (e.g. PII) in S3, and alerts you to it
 
+> Exam-wording cue: all three sound like generic "security scanners" but ask different questions. **GuardDuty** — "is something suspicious happening?" (threat/anomaly detection across account activity, network traffic, DNS). **Inspector** — "is this resource vulnerable?" (CVE/vulnerability scanning of EC2, ECR images, Lambda). **Macie** — "is sensitive data exposed?" (PII/sensitive-data discovery, S3 only). If the question mentions PII or sensitive data classification → Macie; CVEs/vulnerabilities on compute → Inspector; anomalous account/network behavior → GuardDuty.
+
 ## CloudWatch vs. CloudTrail vs. Config
 
 - **CloudWatch** — performance monitoring (metrics/dashboards), events/alerting, log aggregation — see [cloudwatch.md](../08-management-governance/cloudwatch.md)

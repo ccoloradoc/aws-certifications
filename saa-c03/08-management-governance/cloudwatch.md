@@ -38,6 +38,8 @@
 - **Application Insights** — automated dashboards to isolate problems in apps on EC2 (Java/.NET/IIS/databases) plus related resources (EBS, RDS, ELB, ASG, Lambda, SQS, DynamoDB, S3, ECS, EKS, SNS, API Gateway); powered by SageMaker; sends findings/alerts to EventBridge and SSM OpsCenter
 - **Network Synthetic Monitor** — agentless monitoring of on-prem↔AWS network health (packet loss, latency, jitter) over Direct Connect/VPN, via ICMP/TCP tests; publishes results to CloudWatch Metrics
 
+> Exam-wording cue: the four "Insights" products target different things, not interchangeable despite the shared name. **Container Insights** → ECS/EKS/Fargate containers. **Lambda Insights** → serverless function internals (cold starts, worker shutdowns). **Contributor Insights** → "who/what is the top offender" in any log data (worst IPs/hosts/URLs). **Application Insights** → whole-application health across EC2 + its dependent resources (RDS, ELB, SQS, etc.), ML-powered via SageMaker. If the question names a specific compute platform → Container/Lambda Insights; "top-N" or "worst offenders" phrasing → Contributor Insights; "automated dashboard for a whole app" → Application Insights.
+
 ## Notes
 
 <!-- Your own notes go here. -->

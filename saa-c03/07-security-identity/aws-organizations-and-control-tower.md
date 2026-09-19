@@ -32,6 +32,8 @@ The base cheat sheet mentioned SCPs (see [account-governance.md](account-governa
 - **Guardrails**: Preventive guardrails use SCPs (e.g. restrict regions across all accounts); Detective guardrails use AWS Config (e.g. flag untagged resources)
 - Includes a compliance dashboard
 
+> Exam-wording cue: Control Tower is not a replacement for Organizations — it's built *on top of* it. "Set up multi-account structure/SCPs manually" → Organizations. "Set up a compliant multi-account environment quickly, with automated guardrails and a dashboard, in a few clicks" → Control Tower.
+
 ## To research
 
 - AWS Resource Access Manager (RAM) for sharing resources across accounts (see [migration-services.md](../09-migration-transfer/migration-services.md))
