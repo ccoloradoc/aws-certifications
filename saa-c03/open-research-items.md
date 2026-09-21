@@ -16,7 +16,6 @@ Use this as your study checklist: pick a row, go to the file, fill in the gap yo
 | DynamoDB GSI vs. LSI | [04-databases/dynamodb.md](04-databases/dynamodb.md) | — |
 | DynamoDB Transactions (`TransactWriteItems` / `TransactGetItems`) | [04-databases/dynamodb.md](04-databases/dynamodb.md) | — |
 | Partner event buses; EventBridge vs. SNS vs. SQS (when to use which) | [06-application-integration/eventbridge.md](06-application-integration/eventbridge.md) | Event buses (default/custom), rules, targets, and Schema Registry are covered |
-| ACM private certificates (vs. public) | [07-security-identity/acm.md](07-security-identity/acm.md) | Only the public-certificate flow got covered |
 | Envelope encryption (how KMS wraps data keys instead of data) | [07-security-identity/kms-deep-dive.md](07-security-identity/kms-deep-dive.md) | — |
 | KMS Grants vs. key policies for temporary/programmatic access | [07-security-identity/kms-deep-dive.md](07-security-identity/kms-deep-dive.md) | — |
 | AWS Resource Access Manager (RAM) — how cross-account resource sharing actually works | [09-migration-transfer/migration-services.md](09-migration-transfer/migration-services.md) | Still just the one-line seed bullet; [aws-organizations-and-control-tower.md](07-security-identity/aws-organizations-and-control-tower.md) points here for it |

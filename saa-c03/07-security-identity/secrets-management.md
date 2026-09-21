@@ -2,23 +2,74 @@
 
 Classic comparison question not covered in the base cheat sheet.
 
+## SSM Parameter Store
+
+Part of Systems Manager — see [systems-manager.md](../08-management-governance/systems-manager.md).
+
+- Secure storage for configuration and secrets
+- Optional seamless encryption using KMS (see [kms-deep-dive.md](kms-deep-dive.md))
+- Serverless, scalable, durable, easy SDK
+- Version tracking of configurations/secrets
+- Security through IAM
+- Notifications through Amazon EventBridge
+- Integration with CloudFormation
+
+### Hierarchy
+
+- Parameters are organized in paths (e.g. `/other-department/...`)
+- Secrets Manager secrets are readable through Parameter Store at `/aws/reference/secretsmanager/<secret_ID>`
+- Public AWS-provided parameters exist too, e.g. `/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2` for the latest Amazon Linux AMI
+
+### Standard vs. Advanced Tiers
+
+| | Standard | Advanced |
+|---|---|---|
+| Parameters per account per Region | 10,000 | 100,000 |
+| Max value size | 4 KB | 8 KB |
+| Parameter policies | No | Yes |
+| Cost | No additional charge | Charges apply |
+| Storage pricing | Free | $0.05 per advanced parameter per month |
+
+### Parameter Policies (Advanced Only)
+
+- Assign a TTL (expiration date) to a parameter to force updating or deleting sensitive data such as passwords; multiple policies can be assigned at a time
+- **Expiration** — deletes the parameter
+- **ExpirationNotification** — EventBridge notification before expiry
+- **NoChangeNotification** — EventBridge notification if the parameter hasn't changed for a set period
+
+## AWS Secrets Manager
+
+- Newer service, meant specifically for storing secrets
+- Forces rotation of secrets every X days
+- Automates generation of new secret values on rotation (uses a Lambda function)
+- Integrates with Amazon RDS (MySQL, PostgreSQL, Aurora) — "mostly meant for RDS integration"
+- Secrets are encrypted using KMS
+
+### Multi-Region Secrets
+
+- Replicate secrets across multiple Regions; Secrets Manager keeps the read replicas in sync with the primary secret
+- A read replica can be promoted to a standalone secret
+- Use cases: multi-Region apps, disaster recovery strategies, multi-Region databases
+
+## Choosing Between Them
+
+- Rule of thumb: RDS/Aurora credential rotation → Secrets Manager; general config/secrets storage with no rotation requirement → Parameter Store (free) is the more cost-effective answer
+
+> Exam-wording cue: "automatically rotate database credentials" or "rotate secrets every X days" → **Secrets Manager**; "cheapest/free way to store configuration or a secret" or "hierarchical config" → **Parameter Store**; "replicate a secret to another Region for DR" → **Secrets Manager multi-Region secrets**.
+
+## Where These Show Up in Other Services
+
+- **ECS** — the EC2 instance profile (EC2 launch type) lets the ECS agent reference sensitive data in Secrets Manager or SSM Parameter Store
+- **RDS Proxy** — enforces IAM authentication for the DB and securely stores credentials in Secrets Manager
+- **CloudWatch Unified Agent** — centralized configuration via SSM Parameter Store
+
 ## To research
 
-- **AWS Secrets Manager** — automatic rotation, native RDS/Aurora integration, pricing per secret
-- **Systems Manager Parameter Store** (see [systems-manager.md](../08-management-governance/systems-manager.md)) — free tier (Standard), no automatic rotation out of the box, hierarchical parameter organization
-- When the exam expects Secrets Manager vs. Parameter Store as the "correct" answer
-- Encryption: both integrate with KMS (see [kms-deep-dive.md](kms-deep-dive.md))
-
-## Answers (from slides, pages 571-720)
-
-- **SSM Parameter Store**: secure hierarchical config/secrets storage, optional KMS encryption, serverless, version-tracked, IAM-secured, EventBridge notifications, CloudFormation integration
-  - Standard tier: 10,000 parameters/account/region, 4KB max value, free
-  - Advanced tier: 100,000 parameters, 8KB max value, supports Parameter Policies, $0.05/advanced-parameter/month
-  - Parameter Policies (advanced only) can set a TTL/expiration on a parameter and fire EventBridge notifications on expiration or on no-change — good for forcing rotation of things like passwords
-- **AWS Secrets Manager**: newer, purpose-built for secrets; forces rotation on a schedule and can auto-generate new secret values via a Lambda function on rotation; encrypted with KMS; deep native integration with RDS/Aurora (MySQL, PostgreSQL) — this is the main reason to reach for it over Parameter Store
-- **Multi-Region Secrets** — Secrets Manager can replicate a secret to other regions as read replicas kept in sync with the primary, promotable to standalone secrets; use cases: multi-region apps/DBs, DR
-- Rule of thumb: if the question mentions RDS/Aurora credential rotation, the answer is Secrets Manager; if it's general config/secrets storage without a rotation requirement, Parameter Store (free) is the more cost-effective correct answer
+- Secrets Manager pricing per secret (slides don't give numbers)
+- Secrets Manager native rotation beyond RDS/Aurora (slides only mention MySQL, PostgreSQL, Aurora)
 
 ## Notes
 
 <!-- Your own notes go here. -->
+
+Content sourced from slide deck, pages 661-690 (Parameter Store, Secrets Manager, multi-Region secrets), with cross-service mentions from pages 181-210, 421-450, and 571-600.

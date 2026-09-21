@@ -210,7 +210,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | AWS CloudHSM | ⚠️ | `waf-shield-firewall-manager.md`, `s3.md` (passing only) |
 | Amazon Cognito | ✅ | `07-security-identity/iam-sts-cognito.md` |
 | Amazon Detective | ⚠️ | `07-security-identity/aws-organizations-and-control-tower.md` (single mention, no depth) |
-| AWS Directory Service | ⚠️ | `07-security-identity/account-governance.md` (passing) |
+| AWS Directory Service | ✅ | `07-security-identity/account-governance.md` (AWS Directory Service section) |
 | AWS Firewall Manager | ✅ | `07-security-identity/waf-shield-firewall-manager.md` |
 | Amazon GuardDuty | ✅ | `07-security-identity/monitoring-audit.md` |
 | AWS IAM Identity Center | ✅ | `07-security-identity/account-governance.md`, `iam-sts-cognito.md` |
