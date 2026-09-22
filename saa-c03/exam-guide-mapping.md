@@ -25,7 +25,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 |---|---|---|---|---|
 | **1** (30%) | 1.1 Secure access to AWS resources | IAM, IAM Identity Center, AWS STS, AWS Control Tower, SCPs | ✅ | `iam-sts-cognito.md`, `account-governance.md`, `aws-organizations-and-control-tower.md` |
 | **1** (30%) | 1.2 Secure workloads and applications | Cognito, GuardDuty, Macie, Shield, WAF, IAM Identity Center, Secrets Manager, VPN, Direct Connect | ✅ | `waf-shield-firewall-manager.md`, `monitoring-audit.md`, `secrets-management.md`, `hybrid-connectivity.md` — generic "threat vectors" (DDoS/SQLi) concept itself isn't separately explained anywhere |
-| **1** (30%) | 1.3 Data security controls | AWS KMS, ACM | ✅ | `kms-deep-dive.md`, `acm.md`, `aws-backup.md` for backup/replication |
+| **1** (30%) | 1.3 Data security controls | AWS KMS, ACM | ✅ | `kms-deep-dive.md`, `aws-certificate-manager.md`, `aws-backup.md` for backup/replication |
 | **2** (26%) | 2.1 Scalable, loosely coupled architectures | API Gateway, AWS Transfer Family, SQS, Secrets Manager, CDN, ALB, Fargate, Lambda, ECS, EKS, Step Functions | ✅ | `api-gateway.md`, `sqs-sns.md`, `containers-paas.md`, `lambda.md`, `orchestration.md` |
 | **2** (26%) | 2.2 HA / fault-tolerant architectures | Route 53, Comprehend, Polly, ALB, RDS Proxy, X-Ray | ⚠️ partial | `disaster-recovery.md` (DR strategies ✅), `3-rds-proxy.md` ✅ — **X-Ray is still just a one-liner**, no segments/traces/service-map depth |
 | **3** (24%) | 3.1 High-performing/scalable storage | S3, EFS, EBS | ✅ | `s3.md`, `efs.md`, `ebs-instance-store.md`, `comparison.md` |
@@ -206,7 +206,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 | Service | Status | Our file(s) |
 |---|---|---|
 | AWS Artifact | ❌ | — (known gap — compliance report access) |
-| AWS Certificate Manager (ACM) | ✅ | `07-security-identity/acm.md` |
+| AWS Certificate Manager (ACM) | ✅ | `07-security-identity/aws-certificate-manager.md` |
 | AWS CloudHSM | ✅ | `07-security-identity/cloudhsm.md` |
 | Amazon Cognito | ✅ | `07-security-identity/iam-sts-cognito.md` |
 | Amazon Detective | ⚠️ | `07-security-identity/aws-organizations-and-control-tower.md` (single mention, no depth) |

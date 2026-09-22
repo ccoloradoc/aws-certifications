@@ -61,6 +61,8 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 - **DynamoDB Global Tables + client-side encryption** — encrypt specific attributes with the Amazon DynamoDB Encryption Client; the encrypted data replicates to other Regions, and clients there decrypt with low-latency *local* KMS calls using the replicated multi-Region key
 - **Global Aurora + client-side encryption** — same pattern using the AWS Encryption SDK; protects specific fields even from database admins, since decryption requires access to the key
 
+> Exam-wording cue: "data must be encrypted client-side and **not disclosed even to the company's own admins**" → rules out server-side/SSE-KMS (DB admins can still read decrypted data through the engine) — the answer is **client-side encryption with the AWS Encryption SDK**, key access restricted via the KMS key policy to the app role only. Add "**worldwide customers**, **lowest latency**, multi-Region DB (Global Aurora/DynamoDB Global Tables)" → use a **KMS Multi-Region key** so each Region decrypts with a low-latency *local* KMS call instead of crossing Regions to a single-Region key.
+
 ## Service Integration Patterns
 
 ### SSE-KMS on S3
