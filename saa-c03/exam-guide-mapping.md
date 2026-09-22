@@ -207,7 +207,7 @@ This is a first pass from automated search, not a line-by-line read of every fil
 |---|---|---|
 | AWS Artifact | ❌ | — (known gap — compliance report access) |
 | AWS Certificate Manager (ACM) | ✅ | `07-security-identity/acm.md` |
-| AWS CloudHSM | ⚠️ | `waf-shield-firewall-manager.md`, `s3.md` (passing only) |
+| AWS CloudHSM | ✅ | `07-security-identity/cloudhsm.md` |
 | Amazon Cognito | ✅ | `07-security-identity/iam-sts-cognito.md` |
 | Amazon Detective | ⚠️ | `07-security-identity/aws-organizations-and-control-tower.md` (single mention, no depth) |
 | AWS Directory Service | ✅ | `07-security-identity/account-governance.md` (AWS Directory Service section) |

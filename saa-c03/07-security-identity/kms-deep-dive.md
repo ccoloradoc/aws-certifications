@@ -92,7 +92,7 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 
 ## KMS vs. CloudHSM
 
-See [waf-shield-firewall-manager.md](waf-shield-firewall-manager.md) for the full comparison (single-tenant vs. multi-tenant, key access, HA, free tier). CloudHSM integrates with KMS through a Custom Key Store (EBS, S3, RDS, ...).
+See [cloudhsm.md](cloudhsm.md) for the full comparison (single-tenant vs. multi-tenant, key access, HA, free tier). CloudHSM integrates with KMS through a Custom Key Store (EBS, S3, RDS, ...).
 
 ## To research
 
@@ -103,4 +103,4 @@ See [waf-shield-firewall-manager.md](waf-shield-firewall-manager.md) for the ful
 
 <!-- Your own notes go here. -->
 
-Content sourced from slide deck, pages 301-330 (SSE-KMS limits), 631-660 (KMS core, key policies, Multi-Region keys, snapshot copying), and 661-690 (Multi-Region client-side encryption, S3 replication, AMI sharing, CloudHSM vs. KMS).
+Content sourced from slide deck, pages 301-330 (SSE-KMS limits), 631-660 (KMS core, key policies, Multi-Region keys, snapshot copying), and 661-690 (Multi-Region client-side encryption, S3 replication, AMI sharing).
