@@ -6,9 +6,10 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 
 - VPCs map to Regions; subnets map 1-to-1 with Availability Zones
 - Route tables determine traffic direction
-- Internet Gateways connect VPCs to the internet
-- VPC Endpoints provide private connections to AWS services
-- VPC Peering routes traffic directly between two VPCs
+- **Internet Gateway** — horizontally scaled, HA by design, created separately from the VPC, 1:1 with a VPC — attaching it alone does nothing until route tables are also updated to point at it
+- **Default VPC** exists in every new account (one per Region); instances launched without a specified subnet land here, get a public IPv4 by default, and get both public and private DNS names
+- VPC Endpoints provide private connections to AWS services (see [VPC Endpoints](#vpc-endpoints) below)
+- VPC Peering routes traffic directly between two VPCs (see [VPC Peering](#vpc-peering) below)
 - Transit Gateway acts as a central hub for many VPCs (see [hybrid-connectivity.md](hybrid-connectivity.md))
 
 ## IP Addressing
@@ -17,6 +18,18 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - **Private IP** — unique only within its own private network (two different private networks can reuse the same range); reaches the internet via NAT + internet gateway
 - **Elastic IP** — a public IPv4 you own until you release it; attach to one instance at a time; masks instance failure by remapping to a healthy instance; capped at 5 per account (increasable)
   - Generally avoid overusing them — often a sign of poor architecture; prefer a DNS name or a Load Balancer instead of a static public IP
+
+### CIDR Notation & Sizing
+
+- CIDR = a base IP + a subnet mask (`/0`-`/32`) defining a range; quick memo: `/32` = 1 IP, `/24` = last octet varies (256 IPs), `/16` = last 2 octets vary (65,536 IPs), `/8` = last 3 octets vary, `/0` = every IP
+- Private IPv4 ranges (IANA): `10.0.0.0/8`, `172.16.0.0/12` (AWS's default VPC range), `192.168.0.0/16` (typical home networks) — everything else is public
+- Per region: up to 5 VPCs (soft limit); each VPC can have up to 5 CIDR blocks (1 primary + up to 4 secondary, used to expand IP space as a VPC grows), each sized between `/28` (16 IPs) and `/16` (65,536 IPs); VPC CIDRs must come from the private ranges above and shouldn't overlap other networks you'll connect to (e.g. corporate)
+- Every subnet reserves 5 IPs AWS keeps for itself (network address, VPC router, DNS mapping, future use, broadcast) — e.g. for `10.0.0.0/24`: `.0`, `.1`, `.2`, `.3`, `.255` are unusable. Exam tip: needing 29 usable IPs requires at least a `/26` (64 - 5 = 59 ≥ 29), since a `/27` (32 - 5 = 27) falls short
+
+### IPv6 & Egress-Only Internet Gateway
+
+- **IPv6**: every IPv6 address in AWS is public/internet-routable (no private range); IPv4 cannot be disabled on a VPC/subnet — IPv6 just adds dual-stack support, so if you can't launch an instance it's an IPv4-exhaustion problem, not IPv6 (fix: add another IPv4 CIDR)
+- **Egress-Only Internet Gateway** — the IPv6 analog of a NAT Gateway: lets instances make outbound IPv6 connections while blocking the internet from initiating inbound IPv6 connections; still requires a route table update
 
 ## Subnet Types
 
@@ -29,22 +42,54 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 ### Private Subnets
 
 - Route outbound traffic through NAT devices
-- **NAT Gateway** (AWS-managed) vs. **NAT Instance** (manually managed, can double as bastion host)
-- Use a bastion host for SSH access into private subnets
+- **Bastion Host** — sits in a public subnet to let you SSH into private-subnet instances; its SG allows inbound 22 from a restricted CIDR (e.g. your corporate IP); the target instances' SG must allow the bastion's SG (or private IP) in turn
+- **NAT Instance** (legacy, still testable) — an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound); can double as a bastion host
+- **NAT Gateway** — AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
+- **Regional NAT Gateway (RNAT)** — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
+
+> Exam-wording cue: need SSH/RDP **into** a private-subnet instance from outside the VPC → **Bastion Host** (or a Systems Manager Session Manager alternative). Need private-subnet instances to reach **out** to the internet (updates, package installs) → **NAT Gateway/Instance/RNAT**. These solve opposite directions of traffic and aren't substitutes for each other — a NAT Instance is the only one of the three that can also double as a bastion, since it's just an EC2 instance with both roles configured on it.
+
+## To research
+
+- **Regional NAT Gateway (RNAT)** was announced November 2025 (regional-availability-mode NAT Gateway). It isn't yet confirmed against the official SAA-C03 exam guide — verify it's actually in scope before relying on it for the real exam; see [open-research-items.md](../open-research-items.md).
+
+## VPC Peering
+
+- Private connection over AWS's network between two VPCs (even cross-account/cross-region) that must have non-overlapping CIDRs
+- **Not transitive** — a direct peering connection is required between every pair of VPCs that need to talk (A↔B and B↔C peered does not let A reach C through B); route tables in every involved subnet must be updated
+- You can reference a security group in a peered VPC, but only when the peering is same-region
 
 ## VPC Endpoints
+
+- Reach AWS services over the private AWS network instead of the public internet — horizontally scaled, redundant, removes the need for an IGW/NAT to reach AWS services
 
 ### Interface Endpoints
 
 - Private connections via AWS PrivateLink
 - Apply to many services (API Gateway, CloudFormation, CloudWatch, S3, etc.)
-- Backed by an ENI with a private IP, traffic directed via DNS
+- Backed by an ENI with a private IP, traffic directed via DNS — needs a security group, and is billed per-hour + per-GB
 
 ### Gateway Endpoints
 
 - Direct private-IP access to S3 or DynamoDB only
-- Traffic managed via route tables
+- Traffic managed via route tables — no security group, and free to use
 - Protected by VPC endpoint policies
+- Prefer this over an Interface Endpoint for S3/DynamoDB unless you need access from on-prem, another VPC, or another region, in which case Interface is required
+- Example: a VPC-attached Lambda calling DynamoDB should use a Gateway Endpoint (free, private) rather than routing out through a NAT Gateway + IGW to reach the public DynamoDB endpoint
+
+> Exam-wording cue: reducing cost while reaching **S3 or DynamoDB specifically** → **Gateway Endpoint**. Reaching any **other** AWS service privately, or needing access from on-prem/another VPC/another region → **Interface Endpoint** (PrivateLink) — Gateway Endpoints can't be reached outside their own VPC's route tables.
+
+## Traffic Monitoring
+
+### VPC Flow Logs
+
+- Capture IP traffic at the VPC/subnet/ENI level (including AWS-managed ENIs behind ELB, RDS, ElastiCache, Redshift, WorkSpaces, NAT GW, Transit Gateway); destinations: S3, CloudWatch Logs, Kinesis Data Firehose; record fields include srcaddr/dstaddr, srcport/dstport, and an ACCEPT/REJECT action — query with Athena (S3) or Logs Insights (CloudWatch)
+- Troubleshooting with the ACTION field: inbound REJECT → NACL or SG; inbound ACCEPT + outbound REJECT → NACL; outbound REJECT → NACL or SG; outbound ACCEPT + inbound REJECT → NACL (a rejected *return* leg always points at the stateless NACL, never the stateful SG)
+- The IAM role behind Flow Logs needs `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` to publish to CloudWatch Logs
+
+### VPC Traffic Mirroring
+
+- Clones traffic from a source ENI to a target ENI or NLB (same VPC or peered VPC) for inspection by security appliances you manage; can capture everything or a filtered/truncated subset
 
 ## Network Adapters
 
@@ -80,7 +125,7 @@ The flip side of [What can have a security group?](#what-can-have-a-security-gro
 | Interface VPC Endpoints (PrivateLink) | Yes | The ENI is the entry point that gets the private IP |
 | EFS Mount Targets | Yes | One ENI per AZ |
 | AWS Directory Service (Managed Microsoft AD) | Yes | Creates ENIs directly in your VPC subnets |
-| **Route 53 Resolver Endpoints** (Inbound/Outbound) | Yes | Each endpoint provisions ENIs in your chosen subnets — see the Hybrid DNS notes below |
+| **Route 53 Resolver Endpoints** (Inbound/Outbound) | Yes | Each endpoint provisions ENIs in your chosen subnets — see [Hybrid DNS](route53.md#hybrid-dns) in route53.md |
 | **Transit Gateway VPC attachments** | Yes | One ENI per subnet/AZ the attachment uses |
 | Network Load Balancer (NLB) | Yes | Gets an ENI per AZ (with a static IP) even though it traditionally has no SG of its own — traffic passes through to the targets |
 | Gateway Load Balancer (GWLB) | Yes | ENI-backed like NLB, operating below the SG layer |
@@ -111,6 +156,15 @@ The flip side of [What can have a security group?](#what-can-have-a-security-gro
 | Evaluation | All rules together | In order |
 | Default inbound | Deny (custom); Allow (default) | Deny |
 | Default outbound | Allow all | Allow all (default VPC) |
+
+> Exam-wording cue: "stateful, works at the instance level" → **Security Group**. "Stateless, works at the subnet level, can explicitly deny" → **Network ACL**. A scenario needing an explicit **deny** of a specific IP (not just an absence of allow) always points to a NACL — Security Groups have no deny rule at all.
+
+### Network ACLs
+
+- One NACL per subnet (new subnets get the Default NACL, which allows everything in/out — don't modify it, create custom NACLs instead); newly created custom NACLs deny everything by default
+- Rules are numbered 1-32766, lower number = higher precedence, first match wins; the final implicit rule (`*`) denies anything unmatched; AWS recommends numbering in increments of 100 for room to insert rules later
+- Because NACLs are stateless, you must explicitly allow the **ephemeral port range** for return traffic (varies by OS — e.g. 32768-60999 on many Linux kernels, 49152-65535 on Windows/IANA) — this is the most common NACL gotcha
+- Great for a quick, subnet-wide block of a specific malicious IP, which a security group can't easily do as cleanly
 
 ### What can have a security group?
 
@@ -144,57 +198,19 @@ The unifying rule: a security group attaches to an **ENI**, so anything that pro
 | Internet Gateway | No | No ENI of its own |
 | Elastic IP | No | An IP address, not a network interface itself (it's attached *to* something that has an ENI/SG) |
 
+## Cost Optimization
+
+- Use private IPs over public IPs for both performance and cost savings; same-AZ traffic is cheapest (but sacrifices multi-AZ resilience)
+- Egress (outbound) traffic is the expensive direction — ingress is typically free; keep traffic inside AWS where possible, and co-locate Direct Connect in the same region as your resources to cut egress costs
+- A Gateway VPC Endpoint (free) vs. a NAT Gateway (hourly + per-GB) for reaching S3/DynamoDB is a common cost-optimization exam scenario — prefer the Gateway Endpoint (see [VPC Endpoints](#vpc-endpoints) above)
+
 ## Notes
 
 <!-- Your own notes go here. -->
 
 AWS Global Infrastructure (Regions, Availability Zones, Edge Locations, global vs. region-scoped services, how to choose a Region) has moved to [00-basics/global-infrastructure.md](../00-basics/global-infrastructure.md) — it's foundational vocabulary the whole course assumes, not VPC-specific, even though it directly drives the "VPCs map to Regions, subnets map to AZs" rule in Core Concepts above.
 
-### CIDR & VPC sizing (from slides, pages 571-720)
-
-- CIDR = a base IP + a subnet mask (`/0`-`/32`) defining a range; quick memo: `/32` = 1 IP, `/24` = last octet varies (256 IPs), `/16` = last 2 octets vary (65,536 IPs), `/8` = last 3 octets vary, `/0` = every IP
-- Private IPv4 ranges (IANA): `10.0.0.0/8`, `172.16.0.0/12` (AWS's default VPC range), `192.168.0.0/16` (typical home networks) — everything else is public
-- Per region: up to 5 VPCs (soft limit); each VPC can have up to 5 CIDR blocks, each sized between `/28` (16 IPs) and `/16` (65,536 IPs); VPC CIDRs must come from the private ranges above and shouldn't overlap other networks you'll connect to (e.g. corporate)
-- Every subnet reserves 5 IPs AWS keeps for itself (network address, VPC router, DNS mapping, future use, broadcast) — e.g. for `10.0.0.0/24`: `.0`, `.1`, `.2`, `.3`, `.255` are unusable. Exam tip: needing 29 usable IPs requires at least a `/26` (64 - 5 = 59 ≥ 29), since a `/27` (32 - 5 = 27) falls short
-- Internet Gateway: horizontally scaled, HA by design, created separately from the VPC, 1:1 with a VPC — but attaching it alone does nothing until route tables are also updated to point at it
-- Default VPC exists in every new account; instances launched without a specified subnet land here, get a public IPv4 by default, and get both public and private DNS names
-
-### Bastion Hosts & NAT (from slides, pages 571-720)
-
-- Bastion Host: sits in a public subnet to let you SSH into private-subnet instances; its SG allows inbound 22 from a restricted CIDR (e.g. your corporate IP); the target instances' SG must allow the bastion's SG (or private IP) in turn
-- NAT Instance (legacy, still testable): an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound)
-- NAT Gateway: AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
-- Regional NAT Gateway (RNAT) — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
-
-### NACLs in depth (from slides, pages 721-870)
-
-- One NACL per subnet (new subnets get the Default NACL, which allows everything in/out — don't modify it, create custom NACLs instead); newly created custom NACLs deny everything by default
-- Rules are numbered 1-32766, lower number = higher precedence, first match wins; the final implicit rule (`*`) denies anything unmatched; AWS recommends numbering in increments of 100 for room to insert rules later
-- Because NACLs are stateless, you must explicitly allow the **ephemeral port range** for return traffic (varies by OS — e.g. 32768-60999 on many Linux kernels, 49152-65535 on Windows/IANA) — this is the most common NACL gotcha
-- Great for a quick, subnet-wide block of a specific malicious IP, which a security group can't easily do as cleanly
-
-### VPC Peering, Endpoints & Flow Logs (from slides, pages 721-870)
-
-- **VPC Peering**: private connection over AWS's network between two VPCs (even cross-account/cross-region) that must have non-overlapping CIDRs; NOT transitive — a direct peering connection is required between every pair of VPCs that need to talk; route tables in every involved subnet must be updated; you can reference a security group in a peered VPC (same-region only)
-- **VPC Endpoints (PrivateLink)**: reach AWS services over the private AWS network instead of the public internet — horizontally scaled, redundant, removes the need for an IGW/NAT to reach AWS services
-  - **Interface Endpoint** — an ENI with a private IP (needs a security group), supports most services, billed per-hour + per-GB
-  - **Gateway Endpoint** — a route-table target (no security group), supports only S3 and DynamoDB, free — prefer this over an Interface Endpoint for S3/DynamoDB unless you need access from on-prem, another VPC, or another region, in which case Interface is required
-  - Example: a VPC-attached Lambda calling DynamoDB should use a Gateway Endpoint (free, private) rather than routing out through a NAT Gateway + IGW to reach the public DynamoDB endpoint
-- **VPC Flow Logs**: capture IP traffic at the VPC/subnet/ENI level (including AWS-managed ENIs behind ELB, RDS, ElastiCache, Redshift, WorkSpaces, NAT GW, Transit Gateway); destinations: S3, CloudWatch Logs, Kinesis Data Firehose; record fields include srcaddr/dstaddr, srcport/dstport, and an ACCEPT/REJECT action — query with Athena (S3) or Logs Insights (CloudWatch)
-  - Troubleshooting with the ACTION field: inbound REJECT → NACL or SG; inbound ACCEPT + outbound REJECT → NACL; outbound REJECT → NACL or SG; outbound ACCEPT + inbound REJECT → NACL (a rejected *return* leg always points at the stateless NACL, never the stateful SG)
-  - The IAM role behind Flow Logs needs `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` to publish to CloudWatch Logs
-
-### Traffic Mirroring, IPv6 & Egress-Only IGW (from slides, pages 721-870)
-
-- **VPC Traffic Mirroring** — clones traffic from a source ENI to a target ENI or NLB (same VPC or peered VPC) for inspection by security appliances you manage; can capture everything or a filtered/truncated subset
-- **IPv6**: every IPv6 address in AWS is public/internet-routable (no private range); IPv4 cannot be disabled on a VPC/subnet — IPv6 just adds dual-stack support, so if you can't launch an instance it's an IPv4-exhaustion problem, not IPv6 (fix: add another IPv4 CIDR)
-- **Egress-Only Internet Gateway** — the IPv6 analog of a NAT Gateway: lets instances make outbound IPv6 connections while blocking the internet from initiating inbound IPv6 connections; still requires a route table update
-
-### Networking cost tips (from slides, pages 721-870)
-
-- Use private IPs over public IPs for both performance and cost savings; same-AZ traffic is cheapest (but sacrifices multi-AZ resilience)
-- Egress (outbound) traffic is the expensive direction — ingress is typically free; keep traffic inside AWS where possible, and co-locate Direct Connect in the same region as your resources to cut egress costs
-- A Gateway VPC Endpoint (free) vs. a NAT Gateway (hourly + per-GB) for reaching S3/DynamoDB is a common cost-optimization exam scenario — prefer the Gateway Endpoint
+Content sourced from the slide deck, pages 571-870 (CIDR/VPC sizing, bastion hosts & NAT, NACLs, VPC peering, VPC endpoints, flow logs, traffic mirroring, IPv6, cost tips) has been merged into the topical sections above rather than kept as standalone slide-page dumps.
 
 ### From Netec live training (to review)
 

@@ -25,6 +25,7 @@ Use this as your study checklist: pick a row, go to the file, fill in the gap yo
 | Concrete RTO/RPO numbers AWS DRS targets | [10-resilience-dr/elastic-disaster-recovery.md](10-resilience-dr/elastic-disaster-recovery.md) | Mechanism (continuous block-level replication) is covered, specific target numbers aren't |
 | Each Well-Architected pillar's specific design principles; how exam wording maps to a pillar | [well-architected-framework.md](well-architected-framework.md) | Only the cross-pillar general guiding principles + the Well-Architected Tool got covered |
 | Segments/subsegments/traces, service maps, sampling rules, X-Ray SDK/daemon instrumentation | [08-management-governance/x-ray.md](08-management-governance/x-ray.md) | Entire file — one-line seed mention only, no slide coverage |
+| Regional NAT Gateway (RNAT) — whether it's actually in scope | [02-networking/vpc.md](02-networking/vpc.md) | Real AWS feature (announced Nov 2025, confirmed via web search), but too recent to assume the official exam guide covers it — verify before relying on it |
 
 ## Gaps found against the official AWS exam guide
 
