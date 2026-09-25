@@ -42,6 +42,8 @@
 - Seamless S3 integration — can read S3 as a file system through FSx, and write computation output back to S3
 - Accessible from on-premises servers via VPN or Direct Connect
 
+> Exam-wording cue: Lustre itself has **no cold storage tier** — its own storage (SSD/HDD, Scratch/Persistent) is always active/hot, built for compute. But because a Lustre file system can be **linked to an S3 bucket** as its data repository, data can flow out of Lustre into S3, and once there, normal **S3 Lifecycle rules** can transition it into IA/Glacier — so Lustre *enables a path* to cold storage via S3 rather than providing cold storage itself. "Parallel/distributed high-throughput HPC filesystem" → **FSx for Lustre**. "Cold/archival storage for rarely-accessed data" alone → **S3 Glacier** (or Lifecycle rules), not Lustre. A scenario combining fast HPC compute now with eventual archiving later is valid as **Lustre linked to S3, with S3 Lifecycle handling the cold tiering**.
+
 ### Deployment Options
 
 - **Scratch** — temporary storage, data is not replicated (doesn't persist if the file server fails), high burst (6x faster, 200MBps per TiB); use for short-term processing to optimize cost

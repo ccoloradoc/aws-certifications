@@ -8,6 +8,8 @@
 - Cost included in instance pricing
 - **Hibernation** preserves memory/EBS data; stop or terminate loses instance store data
 
+> Exam-wording cue: a scenario emphasizing **high random I/O performance / very high IOPS** for **temporary, non-critical, or reproducible** data (buffer, cache, scratch space, temporary batch-processing output) → **Instance Store** — physically attached to the host, so it's faster than any network-attached volume, but disappears on stop/terminate. A scenario needing that same performance for data that **must persist and survive an instance stop/terminate/replacement** → **EBS Provisioned IOPS (io1/io2)** instead, which trades a bit of raw speed for durability/persistence. "High I/O" alone in the question isn't enough to pick Instance Store — check whether the data can be lost.
+
 ## EBS (Elastic Block Store)
 
 ### SSD Volumes
@@ -19,6 +21,9 @@
 
 - **Cold HDD (sc1)** — infrequent access, lowest cost
 - **Throughput Optimized (st1)** — frequent access, good for data warehousing/big data
+- **Neither st1 nor sc1 can be used as a boot volume** — only SSD volume types (gp2/gp3/io1/io2) are supported for the root/boot volume
+
+> Exam-wording cue: the two EBS families split by *what they're optimized to measure*. **SSD volumes** (gp2/gp3, io1/io2) are built for **transactional workloads with small, frequent read/write I/O**, where **IOPS** is the metric that matters — this is also why only SSD types are allowed as a **boot volume** (an OS needs fast small random reads at startup). **HDD volumes** (st1, sc1) are built for **large sequential/streaming workloads**, where **throughput (MiB/s)**, not IOPS, is the relevant measure — think big-data/data-warehousing scans, not booting an instance. A question ruling out an option because it "cannot be a boot volume" is almost always pointing at st1 or sc1.
 
 ### Limitations
 

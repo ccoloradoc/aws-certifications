@@ -13,6 +13,9 @@ Not covered in the base cheat sheet — notable security gap around DDoS/applica
   - Rate-based rules (count occurrences of events) — for DDoS protection
 - Web ACLs are **Regional**, except for CloudFront (global)
 - A **rule group** is a reusable set of rules you can add to a web ACL
+- **Geo-restriction on an ALB**: attach a Web ACL to the ALB with a **geo-match rule** — WAF inspects the request's source IP against a country/region and either **Block**s listed countries or **Allow**s only listed countries (blocking everything else); **Count** first is a common safe rollout to observe traffic before enforcing
+
+> Exam-wording cue: "restrict/allow access to an **ALB** by country/geography" → **WAF Web ACL with a geo-match rule** attached to the ALB — the ALB itself has no native geo-filtering. If **CloudFront** is already in front of it, geo-restriction can also be done natively at the CloudFront distribution level, without WAF. If the resource is an **NLB**, geo-match via WAF isn't possible at all — WAF only attaches to Layer 7 resources (see the NLB/WAF cue above).
 
 > Exam-wording cue: "application needs a **fixed/static IP** *and* **WAF protection**" → **Global Accelerator + ALB with WAF attached**. The tempting wrong answer is an NLB (which gives static IPs per AZ), but WAF can't attach to an NLB — it's Layer 4. Also: NLB alone can't do L7 filtering, so "filter HTTP requests" rules it out.
 

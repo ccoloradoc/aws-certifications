@@ -23,6 +23,8 @@
 - Multi-account access via **Permission Sets** (bundles of IAM policies assigned to users/groups); **Application Assignments** give SSO into SAML apps; **ABAC** grants fine-grained permissions from user attributes (cost center, title, locale) stored in the Identity Store, so access changes just by editing attributes
 - **Active Directory setup with Identity Center** — connect to an AWS Managed Microsoft AD (integration is out of the box); or connect to a self-managed directory via a two-way trust relationship with AWS Managed Microsoft AD, or via an AD Connector — see [AWS Directory Service](#aws-directory-service)
 
+> Exam-wording cue: "centralize access for AWS Organizations accounts using our **existing on-prem Active Directory**, with minimal new infrastructure to manage, group-based/role-based access, and single sign-on" → **AD Connector + IAM Identity Center + Permission Sets**. The pattern: AD Connector proxies to on-prem AD (no directory data duplicated in AWS, users/groups stay managed on-prem), Identity Center federates against it as the identity source, and Permission Sets map existing **AD group membership** to IAM permissions per account — giving centralized, low-maintenance, scalable multi-account access without deploying AWS Managed Microsoft AD (unneeded extra infrastructure) or creating individual IAM users per employee (doesn't scale, no SSO, no group-based management).
+
 ## AWS Directory Service
 
 - **Microsoft Active Directory (AD)** — found on any Windows Server with AD Domain Services; a database of objects (user accounts, computers, printers, file shares, security groups) with centralized security management (create accounts, assign permissions); objects are organized in trees, and a group of trees is a forest

@@ -10,8 +10,10 @@
 
 - Docker container management, highly scalable and high-performance
 - **Launch Types**:
-  - **Fargate** — serverless, AWS-managed infrastructure
+  - **Fargate** — serverless, AWS-managed infrastructure; unlike Lambda, has **no maximum task runtime** — a task can run indefinitely (a long-running service) or for as long as a batch job takes
   - **EC2** — direct instance access, manual management; you provision/maintain the EC2 instances, each running the ECS Agent to register with the cluster (AWS still handles starting/stopping containers on them)
+
+> Exam-wording cue: "serverless, no infrastructure management, but the workload runs **longer than 15 minutes**" (a long batch job, a long-running background process/service) → **Fargate**, not Lambda — Lambda's hard 900-second (15-min) execution cap (see [lambda.md](lambda.md)) rules it out regardless of how attractive "serverless" sounds in the wording. "Short-lived, event-driven, sub-15-minute task" → either works, but Lambda is usually the simpler/cheaper answer.
 - **IAM roles**:
   - **EC2 Instance Profile** (EC2 launch type only) — used by the ECS Agent itself for API calls, CloudWatch Logs, pulling from ECR, reading Secrets Manager/SSM
   - **ECS Task IAM Role** — per-task permissions, defined in the task definition, so different services can have different roles (not instance-level roles/groups)
@@ -34,6 +36,9 @@
 - Deploy one cluster per region for multi-region; logs/metrics via CloudWatch Container Insights
 - **Node types**: Managed Node Groups (EKS creates/manages an ASG of EC2 nodes for you, On-Demand or Spot), Self-Managed Nodes (you create/register nodes yourself, can use the EKS-Optimized AMI, ASG-managed), or Fargate (no nodes to manage at all)
 - Data volumes need a CSI-compliant driver + a StorageClass manifest; supports EBS, EFS (works with Fargate), FSx for Lustre, and FSx for NetApp ONTAP
+- **IAM Roles for Service Accounts (IRSA)** — the EKS equivalent of the ECS Task IAM Role: gives an individual Kubernetes ServiceAccount (and thus the pods using it) its own IAM role, instead of every pod inheriting the shared IAM role attached to the underlying EC2 node. Works via an OIDC identity provider associated with the cluster: an IAM role trusts that OIDC provider (scoped to a namespace + ServiceAccount name), and pods using the annotated ServiceAccount get short-lived credentials for that role automatically
+
+> Exam-wording cue: "different pods/services in the same EKS cluster need different, isolated AWS permissions" → **IRSA**. The same requirement on ECS → **ECS Task IAM Role** (see above). Either way, "give the node/instance role broader permissions instead" is the wrong answer — it violates least privilege by granting access to everything running on that node, not just the workload that needs it.
 
 ## AWS Elastic Beanstalk
 

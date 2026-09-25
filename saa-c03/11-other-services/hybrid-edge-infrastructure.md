@@ -16,6 +16,8 @@ Not covered in the base cheat sheet — usually a small number of exam questions
   - Supported services include EC2, EBS, S3, EKS, ECS, RDS, EMR
   - This is the "correct answer" whenever a question needs AWS services running physically on-premises rather than merely connected to on-premises (that's Direct Connect/Transit Gateway territory instead)
 
+> Exam-wording cue: "AWS services must run **physically inside our own data center**" (data residency, ultra-low local latency to on-prem systems, regulatory requirement to keep data on-site) → **Outposts**. "Just need **fast, private network connectivity** between our data center and AWS, workloads still run in AWS" → **Direct Connect** (or **Transit Gateway** for hubbing multiple VPCs/on-prem sites). The tell: does the workload itself need to be on-prem, or just reachable from on-prem — Outposts answers the former, Direct Connect/Transit Gateway answer the latter.
+
 ## Notes
 
 <!-- Your own notes go here. -->

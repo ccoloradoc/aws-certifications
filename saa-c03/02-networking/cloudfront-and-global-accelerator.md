@@ -14,6 +14,10 @@
 ### Origins
 
 - CloudFront origin types: S3 bucket (secured via Origin Access Control — OAC, the newer replacement for OAI), VPC Origin (private ALB/NLB/EC2 in a private subnet, no internet exposure needed), or Custom HTTP origin (an S3 static website, or any public HTTP backend like a public ALB)
+- **Custom Origin with on-premises resources** — a Custom HTTP origin can be any publicly-reachable HTTP(S) server, including one physically hosted on-premises (it just needs a public DNS name/IP CloudFront's edge locations can reach; it doesn't need to be an AWS resource at all). Lets an on-prem app gain CloudFront's edge caching, global acceleration, HTTPS termination, and WAF/Shield protection without migrating anything to AWS. Configure via Origin Protocol Policy (HTTP/HTTPS/match-viewer), origin port, and connection/response/keep-alive timeouts
+  - **Security gap**: unlike an S3 origin (protected by OAC), a custom origin has no equivalent lock — nothing stops traffic from bypassing CloudFront and hitting the on-prem server directly, skipping caching/WAF entirely. Standard fix: CloudFront sends a **custom header with a secret value** on every request, and the origin server is configured to reject any request missing that header
+
+> Exam-wording cue: "CloudFront origin is on-premises / not an AWS resource" → **Custom Origin**, not the S3 or VPC Origin types (those are for AWS-hosted content). "Prevent users from bypassing CloudFront and hitting the origin directly" — for **S3** → **OAC**; for a **custom origin (including on-prem)** → a **custom header with a secret value**, checked at the origin.
 
 ### CloudFront + S3
 

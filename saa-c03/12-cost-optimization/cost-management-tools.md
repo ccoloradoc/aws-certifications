@@ -4,23 +4,34 @@ The base cheat sheet covered EC2 purchasing options but almost nothing else from
 
 ## To research
 
-- **AWS Cost Explorer** — visualize and analyze spend over time
 - **AWS Budgets** — set cost/usage thresholds and alerts
-- **AWS Trusted Advisor** — automated checks across cost, performance, security, fault tolerance, service limits (note which checks require Business/Enterprise support)
 - **AWS Compute Optimizer** — rightsizing recommendations for EC2, EBS, Lambda
 - **Savings Plans** (Compute vs. EC2 Instance) vs. **Reserved Instances** — flexibility trade-offs (compare with [ec2.md](../01-compute/ec2.md) purchasing options)
 - **Cost Allocation Tags** — attributing spend to teams/projects
 - **AWS Pricing Calculator** — estimating costs before deployment
 - Consolidated billing (see [aws-organizations-and-control-tower.md](../07-security-identity/aws-organizations-and-control-tower.md))
 
+## Cost Explorer
+
+- Visualize/analyze cost & usage over time; custom reports at account-wide or monthly/hourly/resource-level granularity; grouping by service, account, region, instance type, tag, API operation, AZ, etc.
+- Recommends an optimal Savings Plan based on the last 60 days of usage (shows estimated $/hour commitment and projected monthly savings vs. On-Demand)
+- Forecasts usage up to 18 months out from historical trends
+
+## AWS Cost Anomaly Detection
+
+- ML-based continuous monitoring that learns your normal spend pattern (no manual thresholds needed) to catch one-time spikes or sustained cost creep
+- Scoped to services, member accounts, cost allocation tags, or cost categories
+- Delivers a root-cause anomaly report via individual alerts or daily/weekly SNS summaries
+
+## AWS Trusted Advisor
+
+- Agentless, high-level account assessment across Cost Optimization, Performance, Security, Fault Tolerance, Service Limits, and Operational Excellence
+- The full check set and programmatic access via the Support API require a Business or Enterprise support plan (the free tier only gets a limited check set)
+
+> Exam-wording cue: "visualize/analyze/forecast spend over time" → Cost Explorer. "Automatically flag an unusual spend spike with no threshold to configure" → Cost Anomaly Detection (contrast with Budgets, which needs a manual threshold you set yourself). "Broad best-practice check across cost *and* performance/security/fault-tolerance" → Trusted Advisor, not a cost-only tool despite living in this category.
+
 ## Notes
 
 <!-- Your own notes go here. -->
 
-### Cost Explorer & Trusted Advisor detail (from slides, pages 721-870)
-
-- **Cost Explorer**: visualize/analyze cost & usage over time; custom reports at account-wide or monthly/hourly/resource-level granularity; grouping by service, account, region, instance type, tag, API operation, AZ, etc.; recommends an optimal Savings Plan based on the last 60 days of usage (shows estimated $/hour commitment and projected monthly savings vs. On-Demand); forecasts usage up to 18 months out from historical trends
-- **AWS Cost Anomaly Detection**: ML-based continuous monitoring that learns your normal spend pattern (no manual thresholds needed) to catch one-time spikes or sustained cost creep; scoped to services, member accounts, cost allocation tags, or cost categories; delivers a root-cause anomaly report via individual alerts or daily/weekly SNS summaries
-- **Trusted Advisor**: agentless, high-level account assessment across Cost Optimization, Performance, Security, Fault Tolerance, Service Limits, and Operational Excellence; the full check set and programmatic access via the Support API require a Business or Enterprise support plan (the free tier only gets a limited check set)
-
-> Exam-wording cue: "visualize/analyze/forecast spend over time" → Cost Explorer. "Automatically flag an unusual spend spike with no threshold to configure" → Cost Anomaly Detection (contrast with Budgets, which needs a manual threshold you set yourself). "Broad best-practice check across cost *and* performance/security/fault-tolerance" → Trusted Advisor, not a cost-only tool despite living in this category.
+Content sourced from the slide deck, pages 721-870, has been merged into the topical sections above (Cost Explorer, Cost Anomaly Detection, Trusted Advisor) rather than kept as a standalone slide-page dump.

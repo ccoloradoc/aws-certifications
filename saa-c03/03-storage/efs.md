@@ -5,7 +5,19 @@
 - Linux only (not supported on Windows)
 - POSIX permissions control file access
 - Objects unused for 90 days can transition to **EFS IA** (Infrequent Access) for cost savings
-- Protected by EFS Security Groups
+- Protected by EFS Security Groups — each **mount target** is an ENI in a VPC subnet, and like any ENI it has an attached security group; the mount target's SG must allow inbound **NFS (port 2049)** from the client's SG (or CIDR), and the client must allow outbound on that same port
+
+> Exam-wording cue: "restrict which instances/subnets can even connect to an EFS file system" → **Security Groups on the mount targets** (network-layer gate — can you reach port 2049 at all). "Restrict what a connected client can read/write once mounted" → **POSIX permissions** (or IAM + Access Points for finer-grained, per-client-path control) — SGs don't control file/directory-level access, only network reachability.
+
+## Cross-Account Access
+
+Mounting one EFS file system from a different AWS account requires three separate things to all be true at once:
+
+1. **Network connectivity between the two VPCs** — mount targets are just ENIs with private IPs in a subnet, so the client's VPC needs a path to the file system's VPC via **VPC Peering** or **Transit Gateway**
+2. **A File System Policy on the EFS file system itself** (the owning account) — a resource-based policy (like an S3 bucket policy) granting the other account's principal `elasticfilesystem:ClientMount`, `ClientWrite`, `ClientRootAccess`, etc.
+3. **An IAM policy in the consuming account** authorizing its own principals (e.g. the EC2 instance role) to call those same `elasticfilesystem:Client*` actions against that specific file system's ARN
+
+> Exam-wording cue: "share one EFS file system across multiple AWS accounts/VPCs" needs all three — **VPC Peering/Transit Gateway** (network) **+ an EFS File System Policy** (resource-based, on the file system) **+ IAM permissions in the caller's account**. A distractor that only sets up one or two of these (e.g. "just peer the VPCs" or "just add an IAM policy") is incomplete — miss any one piece and the mount fails.
 
 ## Notes
 

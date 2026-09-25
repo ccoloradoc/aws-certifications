@@ -34,6 +34,15 @@ AWS offers 300+ EC2 instance types across 5 instance families, each with varying
 - **Run Command** (SSM) — manage live instances without SSH
 - **EC2 Instance Connect** — browser-based SSH, no key file, AWS uploads a temporary key; works out-of-the-box only on Amazon Linux 2; port 22 must still be open
 
+### Amazon Machine Images (AMIs)
+
+- A template for launching instances: AWS-provided, your own custom AMI (built from a configured instance, to avoid reconfiguring standard/security settings every time), or sourced from AWS Marketplace (third-party vendor AMIs, e.g. a security appliance, directly launchable)
+- An AMI is really just **metadata + a pointer to an EBS snapshot** holding the actual block-level data — both the AMI registration and its backing snapshot are region-scoped objects
+- **Copying an AMI to another region** copies the underlying EBS snapshot's data into that region first, then registers a new AMI there pointing at the copy — this is why a "copy AMI" action always produces a new snapshot in the destination region: the snapshot *is* the data being duplicated, not a side effect
+- **EC2 Image Builder** — AWS-managed service for maintaining a custom-AMI pipeline (version and reuse a "template" for future launches, avoiding rework)
+
+> Exam-wording cue: "copying an AMI to another region creates an extra/unexpected EBS snapshot there" is expected behavior, not a bug or wasted cost to eliminate — an AMI cannot exist in a region without its backing snapshot in that same region. A question framing this as a problem to solve is testing whether you understand AMIs are snapshot-backed, not that something is misconfigured.
+
 ## EC2 Hibernate
 
 - Preserves in-memory (RAM) state to a file on the root EBS volume for faster reboot
@@ -67,7 +76,22 @@ An ENI is what a security group and an IP address actually attach to — see the
 - **Scaling policies**: Simple, Scheduled, Dynamic, Step, Target Tracking
   - Scales on CloudWatch alarms (metric computed across the whole ASG); good metrics to scale on: `CPUUtilization`, `RequestCountPerTarget`, Network In/Out, or a custom pushed metric
   - **Predictive Scaling** — continuously forecasts load and schedules scaling ahead of time
+
+> Exam-wording cue: demand follows a **known, predictable calendar pattern** (e.g. payroll runs every 1st of the month, a marketing event with a known start time) → **Scheduled Scaling** — set capacity ahead of time, no metric needed. Demand is **live/reactive to current load** (CPU spikes unpredictably) → **Dynamic/Target Tracking Scaling**. Demand has a **recurring but not manually-known pattern** AWS can learn from historical data → **Predictive Scaling**. A scenario stating the exact date/time of an expected spike is the giveaway for Scheduled, not Predictive or Dynamic.
+
+> Exam-wording cue: within **Dynamic Scaling** itself, **Target Tracking** is the "just tell me the number" option — you set a target value for a metric (e.g. "keep average CPU at 40%"), and AWS automatically creates and manages the CloudWatch alarms and capacity adjustments to hold it there; this is AWS's recommended default for most threshold-based scaling and the answer whenever the scenario just wants a metric held near a target with minimal setup. **Step Scaling** is for when the *magnitude* of the breach should drive the *size* of the response (e.g. CPU at 90% scales out more instances than CPU at 65%) — you define the alarm and multiple adjustment steps yourself. **Simple Scaling** is the legacy option: one alarm, one fixed adjustment, then it waits out a full cooldown before evaluating again — rarely the correct exam answer once Target Tracking or Step Scaling is offered as an alternative.
+
 - **Cooldown periods** (default 300s) affect how quickly instances are terminated/launched after a scaling activity — the ASG won't launch/terminate more instances until metrics stabilize; using a ready-to-use AMI reduces boot time and lets you shorten the cooldown
+
+### Maintenance Without Losing Instances
+
+- **Standby state** — manually pull a single `InService` instance out of the ASG's active rotation to patch/troubleshoot it: it's deregistered from the load balancer and excluded from health checks/metrics, but stays part of the group (not terminated); move it back to `InService` when done
+  - When you put an instance into Standby you choose whether to **decrement desired capacity**: decrement it and the ASG leaves the gap alone; don't decrement it and the ASG launches a replacement instance to keep serving at full capacity while you work on the standby one
+- **Suspending the `ReplaceUnhealthy` process** — a group-wide alternative: ASGs run several automatic background processes (`Launch`, `Terminate`, `HealthCheck`, `ReplaceUnhealthy`, `AZRebalance`, `AlarmNotification`, `ScheduledActions`, `AddToLoadBalancer`); suspending just `ReplaceUnhealthy` stops the ASG from terminating/replacing instances that fail health checks — useful when planned maintenance (e.g. a rolling patch that takes an app briefly offline) would otherwise look like an unhealthy instance and get killed and replaced mid-work
+
+> Exam-wording cue: need to work on **one specific instance** without it being terminated or losing overall serving capacity → **Standby state** (don't decrement desired capacity). Need to perform maintenance **across the group** where health checks would otherwise flag instances as unhealthy during the work (e.g. a manual rolling update) → **suspend the `ReplaceUnhealthy` process** for the duration, then resume it. Both avoid termination; Standby is per-instance and explicit, `ReplaceUnhealthy` suspension is group-wide and health-check-driven.
+
+> Exam-wording cue: instance-replacement **order** differs by process. **`AZRebalance`** (fixing an AZ imbalance) always **launches the replacement first, then terminates** the old instance — it can even temporarily exceed max size (by ~10%, rounded up) to do so, since the instances being replaced aren't broken, just unevenly distributed, and AWS avoids a capacity dip. **`ReplaceUnhealthy`** (a single failed instance) does the opposite: **terminates the unhealthy instance first, then launches** a replacement — no allowance to exceed max size, since the bad instance should come out immediately. A question asking "does the ASG launch or terminate first" hinges entirely on *which* process is triggering the replacement.
 
 ## Notes
 

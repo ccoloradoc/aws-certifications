@@ -2,7 +2,10 @@
 
 ## IAM (Identity and Access Management)
 
-- **Permissions boundary** — sets the maximum permissions an IAM entity can have, regardless of attached policies
+- **Permissions boundary** — sets the maximum permissions an IAM entity can have, regardless of attached policies; effective permissions are the **intersection** of the identity-based policy and the boundary — it never grants access on its own, only narrows what an identity-based policy would otherwise allow. Scoped to a single **user or role**, within one account; the standard use case is safely delegating IAM administration (e.g. letting a team lead create roles for their team without being able to grant those roles admin access)
+
+> Exam-wording cue: "limit the maximum permissions a **specific IAM role/user** can have, even permissions delegated by someone else" → **Permissions Boundary**. "Limit the maximum permissions for an **entire AWS account or OU** in an Organization, affecting everyone including root" → **SCP** (Service Control Policy) — same "ceiling, not a grant" concept, but SCPs live in AWS Organizations and apply account/OU-wide, while a permissions boundary is IAM-level and applies to one identity.
+
 - Global service; root account is created by default and shouldn't be used/shared day-to-day
 - **Users** map to a physical person; **Groups** contain only users (not other groups); a user can belong to multiple groups or none
 - **Policies** are JSON documents attached to users/groups defining permissions (apply least privilege)

@@ -11,10 +11,20 @@
 - **FIFO** — rigorous message ordering, deduplication; 300 msg/s (3,000 batched) throughput, exactly-once via Deduplication ID, ordered within a Message Group ID
 - **Standard** — unlimited throughput/messages, best-effort ordering, at-least-once delivery (can duplicate); <10ms publish/receive latency
 
+> Exam-wording cue: a scenario requiring messages **never be processed more than once** or **strict ordering** (e.g. financial transactions, sequential commands) → **FIFO** — deduplication (via Deduplication ID or content-based dedup) and ordering (via Message Group ID) are FIFO-only guarantees. **Standard** queues give **at-least-once** delivery, meaning the consumer application itself must tolerate/handle duplicate and out-of-order messages (e.g. by making processing idempotent) — Standard never prevents duplicates on its own.
+
 ### Polling
 
 - **Short polling** (default) — checks a subset of servers, may return no messages even if some exist
 - **Long polling** — consumer waits (1-20s, 20s preferred) for a message instead of returning empty immediately; reduces API call volume/cost vs. short polling; configurable at the queue or per-call (`WaitTimeSeconds`) level
+
+### Batch Operations
+
+- **SendMessageBatch / DeleteMessageBatch / ChangeMessageVisibilityBatch** — send, delete, or adjust visibility for up to **10 messages in a single API call** instead of one at a time; each batch call is billed/counted as a single request regardless of message count, reducing cost and increasing effective throughput
+- This is the mechanism behind FIFO's "300 msg/s (3,000 batched)" figure above: the raw API call limit is 300 requests/sec, and batching 10 messages per call multiplies that to 3,000 messages/sec of actual throughput
+- **Lambda consuming SQS** batches too, via its own separate settings: **BatchSize** (messages per invocation — up to 10 for FIFO, up to 10,000 for Standard when combined with a batching window), a **batching window** (how long to wait to fill a batch before invoking anyway), and **`ReportBatchItemFailures`** — lets the function report which *specific* messages in a batch failed, so only those are retried/sent to a DLQ instead of reprocessing the entire batch over one bad message
+
+> Exam-wording cue: "reduce SQS costs/API calls" or "increase SQS throughput" → **batch API operations** (SendMessageBatch/DeleteMessageBatch), up to 10 messages per call. "Some messages in a Lambda-SQS batch fail and shouldn't cause the whole batch to be reprocessed" → **`ReportBatchItemFailures`**, not a bigger batch size or a separate queue.
 
 ### Security
 

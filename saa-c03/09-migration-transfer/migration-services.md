@@ -26,6 +26,10 @@
   - Sources: on-prem/EC2-hosted Oracle/SQL Server/MySQL/MariaDB/PostgreSQL/MongoDB/SAP/DB2, Azure SQL Database, any RDS engine incl. Aurora, S3, DocumentDB
   - Targets: on-prem/EC2-hosted Oracle/SQL Server/MySQL/MariaDB/PostgreSQL/SAP, RDS, Redshift, DynamoDB, S3, OpenSearch, Kinesis Data Streams, Kafka, DocumentDB, Neptune, Redis, Babelfish
 - **AWS SCT** (Schema Conversion Tool) — converts database schemas between engine types (e.g. SQL Server/Oracle → MySQL/PostgreSQL/Aurora for OLTP, Teradata/Oracle → Redshift for OLAP); **not needed** when the engine doesn't change (e.g. on-prem PostgreSQL → RDS PostgreSQL is still PostgreSQL, just a different platform)
+- **SCT + DMS together, for a heterogeneous migration**: SCT converts the schema first (tables, views, stored procedures translated to the target engine's dialect, before any data moves), then DMS migrates the actual data (full load, plus ongoing CDC replication if configured) into that converted schema. Neither is sufficient alone here — DMS moves data but doesn't translate schema, and SCT translates schema but doesn't move or replicate data
+
+> Exam-wording cue: source and target are **different database engines** (e.g. Oracle → Aurora PostgreSQL) → **SCT (schema) + DMS (data/CDC)** together, in that order. Source and target are the **same engine**, just a different platform (e.g. on-prem MySQL → RDS MySQL) → **DMS alone** is sufficient; SCT is unnecessary since there's no schema translation needed.
+
 - RDS/Aurora same-engine migration paths (MySQL and PostgreSQL both): (1) snapshot-and-restore into Aurora, or (2) create an Aurora Read Replica from the RDS source and promote it once replication lag hits zero (slower/costlier but near-zero downtime); for external (non-RDS) sources: dump to S3 and import (faster), or use DMS if both DBs are live
 
 ## Server & VM Migration

@@ -27,6 +27,8 @@
 
 - Fully managed in-memory cache in front of DynamoDB, microsecond reads, no application code changes needed (same API), default 5-minute TTL; solves read congestion/"hot key" problems
 
+> Exam-wording cue: "DynamoDB reads are slow," a **hot partition key**, or "microsecond DynamoDB reads with no application code changes" → **DAX** — it's API-compatible with DynamoDB, so the app keeps calling the same operations while DAX transparently caches in front of them. "Cache session data," cache results from a **different** database/computation, or need Redis-specific features (pub/sub, sorted sets) → **ElastiCache** instead, which requires you to write the cache-aside logic yourself (check cache → miss → query DynamoDB → write back to cache) rather than being transparent like DAX. See [4-elasticache.md](4-elasticache.md).
+
 ## TTL (Time-to-Live)
 
 - Auto-deletes items past an expiry timestamp attribute; use cases: trimming stored data to only current items, regulatory data-retention limits, web session expiry

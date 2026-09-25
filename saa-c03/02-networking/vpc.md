@@ -69,6 +69,18 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - Apply to many services (API Gateway, CloudFormation, CloudWatch, S3, etc.)
 - Backed by an ENI with a private IP, traffic directed via DNS — needs a security group, and is billed per-hour + per-GB
 
+#### AWS PrivateLink — two sides
+
+- **Consuming an AWS service privately** — the common case above: reaching S3, CloudWatch, SQS, SNS, etc. via an Interface Endpoint instead of routing out through an IGW/NAT
+- **Exposing your own service privately** — put your application behind an NLB and publish it as a PrivateLink **endpoint service**; other AWS accounts/VPCs then connect to it via their own Interface Endpoint, without VPC peering, without exposing it to the internet, and without needing non-overlapping CIDRs — the standard pattern for a shared/SaaS-style service (e.g. a security vendor exposing a scanning service to customer VPCs)
+
+#### PrivateLink vs. VPC Peering
+
+- **VPC Peering** — full network-level connection between two VPCs; anything on either side can reach anything on the other (subject to route tables/SGs); requires non-overlapping CIDRs
+- **PrivateLink** — one-directional, service-level access only; the consumer reaches just the exposed service, not the whole VPC; CIDRs can overlap since there's no full network merge happening
+
+> Exam-wording cue: need to expose *one specific service* to many other VPCs/accounts (especially at scale, or where CIDRs might overlap) → **PrivateLink** (endpoint service + Interface Endpoint). Need full bidirectional network connectivity between two VPCs → **VPC Peering** (or **Transit Gateway** at scale, see [hybrid-connectivity.md](hybrid-connectivity.md)). "Overlapping CIDRs" in the question is the classic tell that rules out Peering and points to PrivateLink.
+
 ### Gateway Endpoints
 
 - Direct private-IP access to S3 or DynamoDB only

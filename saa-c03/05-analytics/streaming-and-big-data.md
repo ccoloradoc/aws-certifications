@@ -108,6 +108,8 @@ Organized by pipeline stage — the order these tools would actually be chained 
 
 > Exam-wording cue: "serverless ETL," "prepare/clean/transform data for analytics," or "convert data to Parquet" → Glue. If the question is instead about *organizing a whole S3-based repository* of that transformed data with catalog + fine-grained permissions, that's Lake Formation (below), which is built on top of Glue.
 
+> Exam-wording cue: within Glue's own authoring tools — "visually clean/normalize/explore a dataset, no code, built for analysts" → **DataBrew** (spreadsheet-like UI, data profiling/cleanup, not full pipeline orchestration). "Visually build an ETL pipeline (source → transform → target), still generates Spark code" → **Glue Studio**. "Full programmatic control writing the Spark ETL job yourself" → **Glue ETL** directly. DataBrew is the odd one out: it's for preparing a single dataset, not authoring a multi-step job.
+
 ### Amazon EMR (Elastic MapReduce)
 
 - Managed Hadoop clusters (100s of EC2 instances) bundled with Spark/HBase/Presto/Flink, auto-scaling, Spot-integrated

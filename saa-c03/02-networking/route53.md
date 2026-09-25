@@ -20,6 +20,9 @@ Define how Route 53 *responds* to DNS queries — don't confuse this with load b
 - **Failover** — active/passive routing based on health checks
 - **Geolocation** — route based on user location, specified by Continent, Country, or US State; if locations overlap, the most specific match wins; should always define a "Default" record to catch unmatched queries; can be associated with Health Checks; use cases: website localization, restricting content distribution, load balancing
 - **Geoproximity** — route based on the geographic location of users *and* resources, with an optional bias to shift traffic: expand a resource's reach (bias 1 to 99) or shrink it (bias -1 to -99); resources can be AWS (specify region) or non-AWS (specify latitude/longitude); requires Route 53 Traffic Flow
+
+> Exam-wording cue: routing decided by **user location only** (country/state/continent), e.g. "restrict content to a specific country" or "serve localized content by region" → **Geolocation**. Routing decided by **actual measured network latency**, e.g. "fastest response time for users" → **Latency-based**. Routing that needs to **shift traffic volume toward/away from a resource** via a bias value, or involves non-AWS/on-prem endpoints by lat/long → **Geoproximity** (the only one of the three that can deliberately shrink or expand a resource's effective radius). "Location" in the question wording ≠ automatically Geolocation — check whether it's about compliance/content restriction (Geolocation) vs. speed (Latency) vs. shifting load with a bias (Geoproximity).
+
 - **Multi-Value Answer** — returns up to 8 healthy records per query; can be associated with Health Checks (only healthy resources are returned); not a substitute for a real ELB
 - **IP-based** — maps CIDR blocks of client IPs to specific endpoints; use cases: optimize performance, reduce network costs (e.g. route an ISP's users to a specific endpoint)
 
@@ -73,6 +76,8 @@ Define how Route 53 *responds* to DNS queries — don't confuse this with load b
 
 - Route 53 Resolver answers queries for local EC2 names and Private Hosted Zone records by default
 - Resolver Endpoints extend this: Inbound (lets your on-prem resolvers query AWS-side names) and Outbound (forwards VPC queries to your on-prem resolvers) — needed for on-prem connectivity via Direct Connect or VPN
+
+> Exam-wording cue: on-prem needs to resolve **AWS-side** names (e.g. a Private Hosted Zone record, an EC2 private DNS name) → **Inbound Endpoint** (traffic flows *into* the VPC's resolver). The VPC needs to resolve **on-prem** names (e.g. a corporate domain hosted on your own DNS server) → **Outbound Endpoint** (traffic flows *out* to your on-prem resolvers), paired with a **Resolver Rule** that forwards queries for that specific domain. Direction naming is from the VPC's perspective: Inbound = queries coming in, Outbound = queries going out.
 
 ## Notes
 

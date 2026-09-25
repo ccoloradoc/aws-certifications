@@ -6,6 +6,10 @@
 - Supported engines: Postgres, MySQL, MariaDB, Oracle, SQL Server, IBM DB2, and Aurora (see [aurora.md](2-aurora.md) for Aurora specifics)
 - Managed-service benefits over self-hosting on EC2: automated provisioning/OS patching, PITR, monitoring dashboards, read replicas, Multi-AZ DR, maintenance windows, vertical + horizontal scaling — but no SSH access to the instance (except RDS Custom, below)
 - **RDS Custom** (Oracle & SQL Server only) — grants OS/DB-level access (SSH/SSM) for custom configuration/patches, unlike standard RDS; can deactivate Automation Mode to customize (snapshot first)
+  - Use case: third-party applications that require **privileged access** to the database host/OS — e.g. applying special patches or changing database software settings that standard (fully-managed, no-SSH) RDS wouldn't allow — with minimal infrastructure maintenance effort compared to self-hosting on EC2
+  - **Must be explicitly configured for Multi-AZ** for high availability — it isn't automatic/default like it can be made to be on standard RDS
+
+> Exam-wording cue: "need privileged OS/database-host access to support a third-party app's special configuration or patching requirements, on Oracle or SQL Server" → **RDS Custom** — standard RDS deliberately blocks this kind of access as part of being fully managed. If the scenario also emphasizes HA, remember Multi-AZ isn't a given here; it must be set up explicitly, unlike the "just toggle it" experience on standard RDS.
 
 ## RDS Storage Auto Scaling
 
@@ -26,6 +30,8 @@
   2. A new DB instance is restored from that snapshot into a different AZ
   3. Synchronization (sync replication) is established between the original and the new standby
 - **Exam gotcha**: a Read Replica can *also* be configured as Multi-AZ — this combines read scaling with disaster recovery on the same replica, rather than being an either/or choice
+
+> Exam-wording cue: **synchronous** (Multi-AZ) means a write is only acknowledged back to the app once *both* the primary and standby have confirmed it — that round-trip is what makes automatic, zero-data-loss failover possible, at the cost of added write latency; it's why Multi-AZ is framed around **"no data loss"** and **"automatic failover."** **Asynchronous** (Read Replica) means the primary acknowledges the write immediately and pushes it to the replica afterward — faster writes, but the replica can lag ("eventually consistent"), and a failure right after a write but before it replicates means that data is **not** on the replica; that lag is why promoting a Read Replica is always a **manual** action, never automatic. So: "no data loss"/"automatic failover" → Multi-AZ (sync); "scale reads"/"heavy read load"/"improve read performance" → Read Replica (async) — sync vs. async is the mechanical reason those two framings map the way they do.
 
 ## Backups & Restore
 
