@@ -20,6 +20,8 @@
 - Bucket access is granted via an IAM role per File Gateway
 - SMB integrates with Active Directory (AD) for user authentication
 
+> Exam-wording cue: "move **Windows file server** workloads off-prem, need **highly reliable file storage** accessible over **SMB**, Windows-compatible — **select two**" → **Amazon FSx for Windows File Server** (native SMB/NTFS, AD/ACL integration, purpose-built Windows file share — see [fsx.md](fsx.md)) **and** **AWS Storage Gateway's File Gateway** (SMB access to S3-backed storage, also AD-integrated). **EFS** is the standard wrong third option here — Linux-only, no SMB support at all, despite also being "cloud file storage."
+
 ## Volume Gateway
 
 - Block storage using the iSCSI protocol, backed by S3
@@ -28,6 +30,8 @@
 - **Stored volumes** — the entire dataset stays on-premises, with scheduled backups to S3
 
 > Exam-wording cue: "hybrid DR, data available on AWS **and** on-premises must be **uniform**" (the full dataset, not just hot data) → **Stored Volumes** — the entire dataset stays on-prem for low-latency local access, while being asynchronously backed up to S3 in full. "Primary data should live in AWS, only cache hot data locally" → **Cached Volumes** instead — the primary/authoritative copy is in S3, on-prem only holds a subset.
+
+> Exam-wording cue: "**frequently/most-accessed data cached locally**, full dataset **backed up to S3**" describes **both** File Gateway and Volume Gateway (Cached) almost identically — caching behavior alone doesn't disambiguate them. Disambiguate on **access pattern** instead: **file-level** access (NFS/SMB — individual files land as real, independently-readable S3 objects) → **File Gateway**. **Block-level** access (iSCSI — the app mounts a raw disk/volume) → **Volume Gateway (Cached)**, whose S3-backed data is an EBS-snapshot-backed volume internally, not browsable S3 objects. The tell is usually in the answer text itself: "**the full volume**" → Volume Gateway; "**the files/objects**" → File Gateway.
 
 ## Tape Gateway
 

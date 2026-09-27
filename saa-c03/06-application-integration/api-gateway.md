@@ -11,6 +11,8 @@ Manages versioning (v1/v2), environments (dev/test/prod), auth, API keys, thrott
 - **Throttling limits**: server-side, per-method, per-client, account-level
 - **API Caching**: configured per-stage, default TTL of 300 seconds
 
+> Exam-wording cue: "**rate limiting and throttling on a per-client basis**," "**usage quotas**," "**different limits to different API consumers**" → **API Gateway Usage Plans + API Keys**. Each client is issued an **API Key**, and a **Usage Plan** attached to that key defines both **throttling** (steady-state rate + burst limit) and a **quota** (e.g. requests per day/week/month) — different consumers get mapped to different Usage Plans (e.g. free tier vs. premium tier), giving per-client differentiation natively at the API layer, with no custom rate-limiting logic needed in application code.
+
 ## Integration Types
 
 - **Lambda** — invoke a function; easiest way to expose a serverless REST API

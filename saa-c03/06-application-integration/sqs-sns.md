@@ -13,10 +13,14 @@
 
 > Exam-wording cue: a scenario requiring messages **never be processed more than once** or **strict ordering** (e.g. financial transactions, sequential commands) → **FIFO** — deduplication (via Deduplication ID or content-based dedup) and ordering (via Message Group ID) are FIFO-only guarantees. **Standard** queues give **at-least-once** delivery, meaning the consumer application itself must tolerate/handle duplicate and out-of-order messages (e.g. by making processing idempotent) — Standard never prevents duplicates on its own.
 
+> Exam-wording cue: "migrate from **SQS Standard** to **FIFO**, migration checklist — **select three**" → (1) **you cannot convert a Standard queue to FIFO in place** — delete the original Standard queue (or otherwise stand up a separate queue for the app), since FIFO isn't a toggle on an existing queue; (2) the **new queue's name must end in `.fifo`** — a hard naming requirement, not optional; (3) plan for FIFO's **default throughput ceiling of 300 msg/s (3,000 msg/s with batching)** — a real constraint to check against the application's actual message volume before cutting over, since it's lower than Standard's effectively unlimited throughput.
+
 ### Polling
 
 - **Short polling** (default) — checks a subset of servers, may return no messages even if some exist
 - **Long polling** — consumer waits (1-20s, 20s preferred) for a message instead of returning empty immediately; reduces API call volume/cost vs. short polling; configurable at the queue or per-call (`WaitTimeSeconds`) level
+
+> Exam-wording cue: "**migrating to SQS**, **minimize costs**," with no mention of message volume/throughput specifically → **enable Long Polling** — the default **Short Polling** wastes billed API requests returning empty when a queue is idle or lightly loaded; Long Polling collapses those into far fewer, always-productive requests. Reach for **Batch Operations** (see below) instead when the emphasis is on **high message volume/throughput**, not idle-polling waste — the two techniques solve different shapes of the same "SQS bills per request" problem.
 
 ### Batch Operations
 

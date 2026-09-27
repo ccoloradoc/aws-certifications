@@ -7,6 +7,8 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - VPCs map to Regions; subnets map 1-to-1 with Availability Zones
 - Route tables determine traffic direction
 - **Internet Gateway** — horizontally scaled, HA by design, created separately from the VPC, 1:1 with a VPC — attaching it alone does nothing until route tables are also updated to point at it
+
+> Exam-wording cue: "an EC2 instance already has its **own public IPv4 address**, and a **separate NAT instance/Gateway** also exists in the same VPC/subnet — which entity performs the NAT for **that instance**?" → the **Internet Gateway**, not the NAT instance/Gateway. The IGW performs **1:1 NAT** for any instance with a public IP, translating public ↔ private IP as traffic crosses it — this is what lets a public-IP instance reach the internet at all. A NAT instance/Gateway is irrelevant here: it exists to give **outbound-only** access to instances that have **no public IP**, a completely different problem the already-public instance doesn't have.
 - **Default VPC** exists in every new account (one per Region); instances launched without a specified subnet land here, get a public IPv4 by default, and get both public and private DNS names
 - VPC Endpoints provide private connections to AWS services (see [VPC Endpoints](#vpc-endpoints) below)
 - VPC Peering routes traffic directly between two VPCs (see [VPC Peering](#vpc-peering) below)
@@ -45,9 +47,15 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 - **Bastion Host** — sits in a public subnet to let you SSH into private-subnet instances; its SG allows inbound 22 from a restricted CIDR (e.g. your corporate IP); the target instances' SG must allow the bastion's SG (or private IP) in turn
 - **NAT Instance** (legacy, still testable) — an EC2 instance in a public subnet with Source/Destination Check disabled and an Elastic IP attached; private-subnet route tables point traffic at it; bandwidth is capped by instance type, and HA requires your own ASG + failover scripting — you also manage its security groups (allow HTTP/S inbound from private subnets, SSH from home, HTTP/S outbound); can double as a bastion host
 - **NAT Gateway** — AWS-managed, no admin overhead, 5Gbps auto-scaling to 100Gbps, lives in one AZ tied to an Elastic IP, needs an IGW (private subnet → NAT GW → IGW), and — unlike a NAT instance — needs no security groups and can't be used as a bastion. Resilient only within its own AZ, so deploy one NAT Gateway per AZ for full fault tolerance (no cross-AZ failover needed since an AZ outage removes the need for its own NAT anyway)
+
+> Exam-wording cue: "**public and private subnets in each of three AZs, for high availability**," private subnets need **outbound internet access** (e.g. software updates), "**correct solution**" → **one NAT Gateway per AZ**, with each AZ's private subnet routed only to its **own** AZ's NAT Gateway — never a single shared NAT Gateway for all three. A NAT Gateway is resilient only within its own AZ; sharing one across AZs reintroduces the exact single point of failure the question's "high availability" framing is designed to catch, plus needless cross-AZ data transfer cost.
 - **Regional NAT Gateway (RNAT)** — a newer HA NAT variant associated with the whole VPC rather than one AZ: shares route tables across AZs (no per-AZ NAT GW needed), doesn't require a public subnet to host it, and auto-expands to new AZs as resources appear there
 
 > Exam-wording cue: need SSH/RDP **into** a private-subnet instance from outside the VPC → **Bastion Host** (or a Systems Manager Session Manager alternative). Need private-subnet instances to reach **out** to the internet (updates, package installs) → **NAT Gateway/Instance/RNAT**. These solve opposite directions of traffic and aren't substitutes for each other — a NAT Instance is the only one of the three that can also double as a bastion, since it's just an EC2 instance with both roles configured on it.
+
+> Exam-wording cue: "**configuration options** for **NAT Instance** vs. **NAT Gateway** — **select three**" → (1) **Security groups**: a NAT Instance can have one attached (you configure its rules); a NAT Gateway cannot be associated with a security group at all. (2) **Bastion server**: a NAT Instance can double as a bastion host; a NAT Gateway can never be used as one. (3) **Port forwarding**: a NAT Instance can be manually configured for port forwarding; a NAT Gateway doesn't support it. All three differences trace back to the same root cause — a NAT Instance is just a regular EC2 instance you configure yourself, while a NAT Gateway is a fully AWS-managed appliance that deliberately exposes none of that flexibility.
+
+> Exam-wording cue: a subnet is "public" or "private" purely because of its **route table**, not any inherent property — a public subnet's route table has `0.0.0.0/0 → IGW` directly, while a private subnet's has `0.0.0.0/0 → NAT Gateway` instead. This creates a **one-hop vs. two-hop** path: public-subnet traffic goes straight **instance → IGW → internet**; private-subnet traffic goes **instance → NAT Gateway (sitting in the public subnet) → IGW → internet**. The NAT Gateway only works at all because it lives in a subnet that *already* has that direct IGW route — it's borrowing the public subnet's path on the private subnet's behalf, which is exactly why a NAT Gateway must be deployed in a public subnet, never the private one it's serving.
 
 ## To research
 
@@ -73,6 +81,8 @@ A Virtual Private Cloud (VPC) is an isolated, private network hosted within a pu
 
 - **Consuming an AWS service privately** — the common case above: reaching S3, CloudWatch, SQS, SNS, etc. via an Interface Endpoint instead of routing out through an IGW/NAT
 - **Exposing your own service privately** — put your application behind an NLB and publish it as a PrivateLink **endpoint service**; other AWS accounts/VPCs then connect to it via their own Interface Endpoint, without VPC peering, without exposing it to the internet, and without needing non-overlapping CIDRs — the standard pattern for a shared/SaaS-style service (e.g. a security vendor exposing a scanning service to customer VPCs)
+
+> Exam-wording cue: "**VPC-bound components** concerned about accessing **Amazon SQS** over the **public internet**" → create an **Interface VPC Endpoint** for SQS (backed by AWS PrivateLink). SQS is **not** eligible for a Gateway Endpoint (that type only exists for S3 and DynamoDB), so an Interface Endpoint — provisioning an ENI with a private IP in your subnet — is the only way to reach SQS without routing out through an Internet Gateway or NAT Gateway. "VPC-bound" is the specific tell that a network path is even needed at all — a non-VPC-attached Lambda wouldn't have this concern in the first place. The same pattern applies to any other non-S3/DynamoDB AWS service named in a similar "VPC-bound, avoid the public internet" question (SNS, KMS, Secrets Manager, CloudWatch, etc.) — Interface Endpoint is the general-purpose answer whenever the service isn't one of the two Gateway-Endpoint-eligible exceptions.
 
 #### PrivateLink vs. VPC Peering
 
@@ -178,6 +188,8 @@ The flip side of [What can have a security group?](#what-can-have-a-security-gro
 - One NACL per subnet (new subnets get the Default NACL, which allows everything in/out — don't modify it, create custom NACLs instead); newly created custom NACLs deny everything by default
 - Rules are numbered 1-32766, lower number = higher precedence, first match wins; the final implicit rule (`*`) denies anything unmatched; AWS recommends numbering in increments of 100 for room to insert rules later
 - Because NACLs are stateless, you must explicitly allow the **ephemeral port range** for return traffic (varies by OS — e.g. 32768-60999 on many Linux kernels, 49152-65535 on Windows/IANA) — this is the most common NACL gotcha
+
+> Exam-wording cue: "inbound rules are already correctly configured on **both** the Security Group **and** the NACL, but the connection still fails" → the missing piece is almost always a **NACL outbound rule** for the **ephemeral port range** back to the client. SGs are stateful (inbound-allowed traffic gets its return leg permitted automatically), but NACLs are stateless — an inbound-only NACL rule lets the request in but silently drops the reply, since the reply leaves on the client's ephemeral source port, not the service port the inbound rule matched. Adding more inbound rules never fixes this; only an outbound rule does.
 - Great for a quick, subnet-wide block of a specific malicious IP, which a security group can't easily do as cleanly
 
 ### What can have a security group?
@@ -217,6 +229,8 @@ The unifying rule: a security group attaches to an **ENI**, so anything that pro
 - Use private IPs over public IPs for both performance and cost savings; same-AZ traffic is cheapest (but sacrifices multi-AZ resilience)
 - Egress (outbound) traffic is the expensive direction — ingress is typically free; keep traffic inside AWS where possible, and co-locate Direct Connect in the same region as your resources to cut egress costs
 - A Gateway VPC Endpoint (free) vs. a NAT Gateway (hourly + per-GB) for reaching S3/DynamoDB is a common cost-optimization exam scenario — prefer the Gateway Endpoint (see [VPC Endpoints](#vpc-endpoints) above)
+
+> Exam-wording cue: "**private-subnet EC2 instances** exchange a **huge/large volume of data** with **S3 (or DynamoDB)** in the **same region**," traffic is currently routed through a **NAT Gateway**, and the ask is the **most cost-optimal** fix **without impacting** connectivity to S3 or the internet → add a **Gateway VPC Endpoint** for S3 and update the route table so that traffic stops going through the NAT Gateway. The NAT Gateway bills **per-GB processed** on top of its hourly rate, so routing high-volume S3 traffic through it is pure wasted spend; the Gateway Endpoint is **free**, works purely via route table entries (no ENI, no hourly/per-GB cost), and is purely additive — internet-bound traffic keeps flowing through the NAT Gateway exactly as before, only the S3 leg gets rerouted.
 
 ## Notes
 

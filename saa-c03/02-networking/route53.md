@@ -60,6 +60,8 @@ Define how Route 53 *responds* to DNS queries — don't confuse this with load b
 
 - Rule of thumb: pointing the **root/naked domain** at an AWS resource → must use an Alias record (it behaves like an A record under the hood, so the DNS spec allows it at the apex); a CNAME can never be used at the apex, AWS target or not — a subdomain pointing anywhere else can use either
 
+> Exam-wording cue: "your app is hosted **by a third-party provider** at their hostname (e.g. `yourapp.provider.com`), you want users to reach it via **your own subdomain** (e.g. `www.your-domain.com`)" → **CNAME record**, not Alias. Two independent reasons converge here: (1) it's a **subdomain**, not the zone apex, so CNAME is DNS-spec-legal; (2) the target is a **non-AWS hostname**, and Alias records can only point at AWS resources (ELB, CloudFront, S3, API Gateway, Elastic Beanstalk, another record in the same zone) — so even if this *were* the apex, Alias wouldn't be an option here regardless. Alias only enters the picture when the target is an AWS resource; a third-party provider hostname always means CNAME (subdomain) or nothing (apex — not achievable with standard DNS at all).
+
 ### PTR Records
 
 - Reverse DNS lookup (IP → domain name)

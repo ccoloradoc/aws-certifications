@@ -36,6 +36,8 @@
 ## Backups & S3 Integration
 
 - Backups: continuous PITR (optional, up to 35 days, restore creates a new table) vs. on-demand full backups (kept until explicitly deleted, manageable via AWS Backup including cross-region copy) — neither affects live performance
+
+> Exam-wording cue: "application **occasionally writes corrupted/bad data**, need to **remove it as soon as the issue is detected**" → **enable DynamoDB Point-in-Time Recovery (PITR)**, then **restore to a new table at the exact timestamp just before the corruption occurred** and reconcile the clean data back in. PITR's per-second granularity within the last 35 days is what makes "restore to the moment right before an unpredictable, intermittent bad write" possible — a fixed-schedule on-demand backup wouldn't reliably land at the right moment, and DynamoDB Streams only reacts to changes going forward, it can't undo data already written.
 - **Export to S3** — needs PITR enabled, covers any point in the last 35 days, doesn't consume read capacity, outputs DynamoDB JSON or ION (good for analysis/ETL/audit snapshots)
 - **Import from S3** — accepts CSV/DynamoDB JSON/ION, doesn't consume write capacity, always creates a new table, and logs import errors to CloudWatch Logs
 

@@ -52,6 +52,8 @@
 
 - The on-prem side (hardware or software); needs a public, internet-routable IP (or the public IP of a NAT-T-capable NAT device in front of it)
 
+> Exam-wording cue: "**correct configuration** for an AWS Managed **Site-to-Site IPSec VPN**" → **one Customer Gateway (CGW)** — a *resource* representing your on-prem device's public IP/ASN, not the device itself — connected to **one Virtual Private Gateway (VGW)** attached to the VPC, with the connection always provisioning **two IPSec tunnels** for redundancy, each terminating at a separate AWS-managed endpoint in a different Availability Zone. A wrong-answer option describing only a single tunnel, or swapping which side is the CGW vs. VGW, is the standard distractor pattern here.
+
 ### AWS VPN CloudHub
 
 - Low-cost hub-and-spoke model over multiple VPN connections terminating on the same VGW, for secure communication between multiple on-prem sites; still travels over the public internet; needs dynamic routing + route table config

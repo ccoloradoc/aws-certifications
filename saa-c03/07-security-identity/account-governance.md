@@ -44,6 +44,8 @@
 
 > Exam-wording cue: Simple AD vs. AWS Managed Microsoft AD is a **feature-completeness/cost trade-off**, not a networking one — both live entirely in AWS with no on-prem dependency. Need trust relationships, full AD compatibility, or support for AD-dependent enterprise applications → **Managed Microsoft AD**. Need cheap, basic user/group management with no such requirements → **Simple AD**.
 
+> Exam-wording cue: "run **directory-aware workloads** on AWS (e.g. a **SQL Server**-based application needing Windows Authentication/AD integration) **and** configure a **trust relationship** for **SSO** across **on-prem and AWS domains**" → **AWS Managed Microsoft AD**. Two separate requirements are converging on the same answer here: "directory-aware workload" rules out **Simple AD** (AD-*compatible* only, missing the deeper AD feature set some enterprise apps like SQL Server actually need), and "trust relationship" rules out both **Simple AD** (no trust capability at all) and **AD Connector** (a proxy with no directory of its own to trust into) — only Managed Microsoft AD satisfies both at once.
+
 ## Notes
 
 <!-- Your own notes go here. -->

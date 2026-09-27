@@ -24,6 +24,8 @@
 
 > Exam-wording cue: all three sound like generic "security scanners" but ask different questions. **GuardDuty** — "is something suspicious happening?" (threat/anomaly detection across account activity, network traffic, DNS). **Inspector** — "is this resource vulnerable?" (CVE/vulnerability scanning of EC2, ECR images, Lambda). **Macie** — "is sensitive data exposed?" (PII/sensitive-data discovery, S3 only). If the question mentions PII or sensitive data classification → Macie; CVEs/vulnerabilities on compute → Inspector; anomalous account/network behavior → GuardDuty.
 
+> Exam-wording cue: "**identify sensitive data** stored on S3" **and** "**monitor/protect** all S3 data **against malicious activity**" → this needs **both** services together, not either alone: **Amazon Macie** (scans S3 object content via ML/pattern matching to discover and classify sensitive data like PII) **+ Amazon GuardDuty** (with S3 Data Events as an input source, detecting anomalous/malicious activity against the bucket). Macie answers "is sensitive data exposed?"; GuardDuty answers "is something suspicious happening?" — a question naming both requirements in the same sentence is testing whether you reach for both services rather than picking just one.
+
 ## AWS Security Hub
 
 - Aggregates and prioritizes **findings** (not raw logs) from GuardDuty, Inspector, Macie, IAM Access Analyzer, Firewall Manager, and third-party tools into one consolidated dashboard with a security score

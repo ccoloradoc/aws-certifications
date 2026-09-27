@@ -50,5 +50,7 @@
 - AMI creation process: launch & customize an instance → stop it (for data integrity) → build the AMI (also creates EBS snapshots) → launch new instances from it
 - gp3 vs gp2: gp3 has a 3,000 IOPS / 125 MiB/s baseline and lets you scale IOPS/throughput independently of size; gp2 IOPS is tied to volume size (3 IOPS/GiB, max 16,000 IOPS, bursts to 3,000 IOPS on small volumes)
 - io1 max 64,000 PIOPS on Nitro instances (32,000 on others); io2 Block Express has sub-millisecond latency and max 256,000 PIOPS
+
+> Exam-wording cue: "**NoSQL database on EC2**, **I/O intensive and throughput intensive**, needs **up to 25,000 IOPS per volume**" → **Provisioned IOPS SSD (io1/io2)** — the specific IOPS figure is what does the work here: **25,000 exceeds gp2/gp3's 16,000-IOPS ceiling**, ruling out General Purpose SSD regardless of how well-suited it otherwise looks for a "default" database workload. Any requirement stated as a number **above 16,000 IOPS per volume** is a direct tell for io1/io2, since only those types can provision beyond that ceiling (up to 64,000, or 256,000 for io2 Block Express).
 - Multi-Attach (io1/io2 only) — up to 16 EC2 instances in the same AZ, each with full read/write access; requires a cluster-aware file system (not XFS/EXT4)
 - Encryption uses KMS (AES-256); encrypting an existing unencrypted volume: snapshot it → copy the snapshot with encryption enabled → create a new volume from that snapshot → attach

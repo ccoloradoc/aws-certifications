@@ -76,6 +76,8 @@ Controls whether a load balancer node in one AZ can distribute requests to targe
 - Target group members: EC2 instances, IP addresses (must be private IPs), or an Application Load Balancer (lets you put an NLB in front of an ALB, e.g. for a static IP or PrivateLink)
 - One static IP per AZ, with the option to attach an Elastic IP instead — useful for IP whitelisting downstream
 
+> Exam-wording cue: "NLB targets specified by **instance ID**, what's the **routing mechanism**" → traffic is routed to the **primary private IP address of the instance's primary network interface** — the NLB rewrites the packet's destination IP to that address before forwarding. This is one of NLB's two **target types**: **Instance** (by instance ID, always resolves to the primary ENI's primary private IP — no way to target a secondary IP or a different ENI) vs. **IP** (register any specific IP directly — a secondary private IP, an IP in a peered VPC, or even on-prem over VPN/Direct Connect). A scenario needing to route to something other than an instance's primary private IP is the tell that **IP target type** is required instead of Instance ID.
+
 ## Classic Load Balancer (CLB)
 
 - Supports TCP, SSL, HTTP, HTTPS

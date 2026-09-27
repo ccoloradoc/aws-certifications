@@ -21,6 +21,8 @@ Four building blocks: **Regions**, **Availability Zones**, **Data Centers**, and
 - Each Region has multiple AZs (usually 3, minimum 3, maximum 6), named like `ap-southeast-2a`/`-2b`/`-2c`
 - AZs are physically separate for disaster isolation, but interconnected with high-bandwidth, ultra-low-latency links — this is what makes Multi-AZ architectures both resilient *and* fast
 
+> Exam-wording cue: "**same AZ name** (e.g. `us-west-2a`) selected in **two different AWS accounts**, but the instances end up in **different physical AZs**" → AWS **randomizes the AZ-name-to-physical-AZ mapping independently per account**, specifically to spread load evenly — a name like `us-west-2a` has no cross-account meaning. The fix is to use each account's **AZ ID** (e.g. `usw2-az1`) instead — a stable, physical identifier consistent across every account — found via the EC2 console's Zones page or `describe-availability-zones`, and launch into whichever named subnet maps to the **matching AZ ID** in each account.
+
 ## Edge Locations / Points of Presence
 
 - 400+ locations (400+ Edge Locations + 10+ Regional Caches) across 90+ cities in 40+ countries

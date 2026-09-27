@@ -37,6 +37,7 @@ Not covered in the base cheat sheet — notable security gap around DDoS/applica
   - 24/7 access to the AWS DDoS Response Team (DRT)
   - Protection against higher fees during usage spikes caused by a DDoS attack
   - **Automatic application-layer DDoS mitigation** — automatically creates, evaluates and deploys WAF rules to mitigate layer 7 attacks
+  - **Detailed attack diagnostics/visibility** — CloudWatch metrics per attack, plus integration with AWS WAF logging for request-level audit detail — the feature Shield Standard lacks entirely (no visibility/reporting at all)
 
 ## AWS Firewall Manager
 
@@ -58,6 +59,8 @@ Not covered in the base cheat sheet — notable security gap around DDoS/applica
 - **Shield Advanced** adds features on top of WAF, such as dedicated support from the Shield Response Team (SRT) and advanced reporting; consider it if you're prone to frequent DDoS attacks
 
 > Exam-wording cue: "protect one ALB/API/CloudFront from SQL injection, XSS, or block by IP/geo" → **WAF**; "DDoS response team, cost protection during attack spikes" → **Shield Advanced**; "free, automatic DDoS protection" → **Shield Standard**; "enforce WAF/security-group/Shield policies across all accounts in the Organization, including new resources" → **Firewall Manager**; "filter traffic for an entire VPC (Layer 3-7) including Direct Connect/VPN" → **Network Firewall**.
+
+> Exam-wording cue: "**DDoS mitigation**" + "**detailed logs for audit purposes**" + "**minimal changes to existing architecture**" → **Shield Advanced**, applied directly to the existing ALB — no new load balancer, edge service, or re-architecture needed, since Shield Advanced is a protection layer enabled on top of resources you already have. **Shield Standard** is ruled out specifically by "detailed logs" — it's free and automatic, but gives **zero attack visibility or reporting**, which fails the audit requirement outright regardless of how well it handles the DDoS itself.
 
 ## AWS Network Firewall
 

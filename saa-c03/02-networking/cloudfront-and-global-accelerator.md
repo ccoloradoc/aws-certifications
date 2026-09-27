@@ -19,6 +19,8 @@
 
 > Exam-wording cue: "CloudFront origin is on-premises / not an AWS resource" → **Custom Origin**, not the S3 or VPC Origin types (those are for AWS-hosted content). "Prevent users from bypassing CloudFront and hitting the origin directly" — for **S3** → **OAC**; for a **custom origin (including on-prem)** → a **custom header with a secret value**, checked at the origin.
 
+> Exam-wording cue: "migrating static content from **EC2 → S3 + CloudFront**, need to preserve an existing **security-group-style IP allowlist** restricting access to specific (e.g. supplier) IP ranges — **select two**" → **AWS WAF with an IP set, attached to the CloudFront distribution** (replaces the security group's IP-restriction job — SGs don't attach to CloudFront/S3 at all) **+ Origin Access Control (OAC)** on the S3 origin (closes the bypass route, since WAF on CloudFront alone does nothing if the bucket is still reachable directly). Neither alone is sufficient: WAF without OAC leaves S3 as an open backdoor around the IP restriction; OAC without WAF blocks direct S3 access but does nothing to filter *which* CloudFront requests are allowed through.
+
 ### CloudFront + S3
 
 - S3 static website hosting lacks native HTTPS — front it with CloudFront for HTTPS
@@ -70,6 +72,10 @@
 - Global Accelerator proxies packets at the edge to your regional apps over TCP/UDP (better for non-HTTP cases like gaming/UDP, IoT/MQTT, VoIP, or HTTP cases needing static IPs / fast deterministic regional failover)
 
 > Exam-wording cue: "**global users, multiple regions, NLB, non-cacheable/real-time traffic (video/voice/gaming), reduce latency, keep existing infrastructure**" → **Global Accelerator** — routes onto AWS's private backbone from the nearest edge instead of the public internet, additive on top of existing NLBs/EC2 (register them as endpoints, no re-architecture), and works for TCP/UDP where CloudFront's HTTP-caching model doesn't apply. DNS-based routing (Route 53 latency policy) alone only picks the *right region* — it doesn't fix the *path* traffic takes to get there, which is specifically what Global Accelerator adds.
+
+> Exam-wording cue: "**low-latency** distribution of a **proprietary application using UDP protocol**," "**BEST performance**" → **AWS Global Accelerator**. "**UDP protocol**" is the decisive word — it's a non-HTTP, transport-layer (L4) protocol, which immediately rules out **CloudFront** (HTTP/HTTPS only, and built around *caching*, which doesn't help with live, constantly-changing data anyway) and **ALB** (L7, HTTP only). Global Accelerator is the one edge-network service that proxies raw **TCP/UDP** onto AWS's private backbone, which is what actually delivers "BEST performance" for a live, low-latency, non-HTTP feed.
+
+> Exam-wording cue: "**many ALBs/NLBs across multiple Regions**, firewall/security-group rules are getting complex from **too many IP addresses to allowlist**" → **AWS Global Accelerator**'s **2 static anycast IPs** become the single fixed entry point — firewalls only ever need to allowlist those 2 IPs, no matter how many regional endpoints sit behind them or how often those endpoints' own IPs change. Distinct from the gaming/UDP/latency framing above: here the tell is specifically about **shrinking a firewall allowlist**, not raw latency — but it's the same underlying static-IP mechanic driving both answers.
 
 ## Notes
 

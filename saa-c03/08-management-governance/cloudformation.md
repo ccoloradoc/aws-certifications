@@ -5,6 +5,13 @@
 - **Update methods**: direct update, or **change sets** (preview changes before applying)
 - **AWS SAM** (Serverless Application Model) — CloudFormation extension for serverless applications
 
+## StackSets
+
+- **AWS CloudFormation StackSets** — deploys **one template** across **many AWS accounts and Regions** in a single operation, centrally managed by an admin account; StackSets tracks and can re-apply the deployment as accounts/regions are added
+- A **push** model: a central team enforces the same configuration everywhere, as opposed to **AWS Service Catalog**'s **self-service** model, where end users browse and launch from a catalog of pre-approved products
+
+> Exam-wording cue: "**consistent resource provisioning** across **multiple AWS accounts/departments and Regions**," using the **same pre-defined configuration** (specific EC2 instance types, specific IAM roles, etc.) → **AWS CloudFormation StackSets** — deploys **one template** across many accounts/regions in a single operation, centrally enforced by an admin. This is a **push** model: distinct from **AWS Service Catalog**, which is a **self-service** model (end users browse and launch from a catalog of pre-approved products) — reach for Service Catalog when the question emphasizes end users **choosing** from approved options, and StackSets when it emphasizes a central team **enforcing the same configuration** everywhere.
+
 ## Notes
 
 <!-- Your own notes go here. -->

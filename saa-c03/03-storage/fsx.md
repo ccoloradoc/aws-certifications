@@ -59,8 +59,11 @@
 - Storage automatically shrinks or grows
 - Supports snapshots, replication, low-cost compression and data deduplication
 - Point-in-time instantaneous cloning — helpful for testing new workloads
+- **Automatic tiering** — every ONTAP file system has an **SSD tier** (primary, active data) and a **Capacity Pool tier** (elastic, cost-optimized for infrequently-accessed data); NetApp's FabricPool feature continuously monitors access patterns and automatically moves data between the two **at the block level** — no manual lifecycle rules needed, and data is automatically "reheated" back to SSD if accessed again
 
 > Exam-wording cue: "just need **SMB** file sharing, simple setup, least administrative overhead" → **FSx for Windows File Server**. "Need **multi-protocol** (NFS + SMB + iSCSI simultaneously), snapshots/cloning, or migrating an existing NetApp/ONTAP workload" → **FSx for NetApp ONTAP** instead — its extra capability comes with extra operational concepts (SVMs, volumes, ONTAP-specific tooling), which is the wrong trade when a question explicitly asks for the least overhead and only names SMB.
+
+> Exam-wording cue: "**Windows, Mac, and Linux** EC2 instances," need **both SMB and NFS**, part of the data **accessed regularly** and part **less frequently**, **minimize operational overhead** → **FSx for NetApp ONTAP** — the only FSx variant supporting SMB+NFS simultaneously across that OS range, with **built-in automatic tiering** (SSD ↔ Capacity Pool) requiring no manual lifecycle configuration, unlike Lustre (no tiering of its own; needs a separate S3-linked Lifecycle rule) or a plain S3/EFS setup.
 
 ## FSx for OpenZFS
 

@@ -20,6 +20,8 @@ The base cheat sheet mentioned SCPs (see [account-governance.md](account-governa
 - Can be built as an **allowlist** or **blocklist** strategy
 - **SCP vs. IAM Permissions Boundary**: an SCP is an org-wide/account-wide/OU-wide ceiling that can span multiple accounts; a Permissions Boundary is a per-user/per-role ceiling within a single account (not usable on groups) — good for letting one user self-manage policies without escalating to admin, or restricting one specific user rather than a whole account
 
+> Exam-wording cue: "SCPs offer **central control over the maximum available permissions** for all accounts in an Organization — **select three correct statements**" → (1) if an IAM permission policy grants an action that's **not allowed or explicitly denied by the applicable SCP**, the user/role **can't perform that action** — an SCP is a ceiling, not a grant, and always wins over a more permissive identity policy; (2) an SCP **affects all users and roles in member accounts, including the root user** — the one access-control mechanism capable of restricting root itself; (3) an SCP **does not affect service-linked roles** — those exist so other AWS services can integrate with your account/Organization on your behalf, and restricting them via SCP could silently break unrelated AWS service functionality, so they're carved out as an explicit exception.
+
 ## Tag Policies
 
 - Standardize tag keys/allowed values org-wide; support Cost Allocation Tags and ABAC

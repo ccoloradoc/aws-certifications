@@ -42,6 +42,8 @@
 
 > Exam-wording cue: **synchronous** (Multi-AZ) means a write is only acknowledged back to the app once *both* the primary and standby have confirmed it — that round-trip is what makes automatic, zero-data-loss failover possible, at the cost of added write latency; it's why Multi-AZ is framed around **"no data loss"** and **"automatic failover."** **Asynchronous** (Read Replica) means the primary acknowledges the write immediately and pushes it to the replica afterward — faster writes, but the replica can lag ("eventually consistent"), and a failure right after a write but before it replicates means that data is **not** on the replica; that lag is why promoting a Read Replica is always a **manual** action, never automatic. So: "no data loss"/"automatic failover" → Multi-AZ (sync); "scale reads"/"heavy read load"/"improve read performance" → Read Replica (async) — sync vs. async is the mechanical reason those two framings map the way they do.
 
+> Exam-wording cue: "recently experienced a **database outage**," migrate to a **reliable** solution that **minimizes data loss** and **stores every transaction on at least two nodes**" → **RDS Multi-AZ**. "Stores every transaction on at least two nodes" is a near-literal description of Multi-AZ's mechanic: every write is synchronously committed to **both** the primary and standby before being acknowledged, so a primary failure never loses a committed transaction. The "recent outage" framing is the motivation (reliability/HA), not a request for read scaling — which is what rules out Read Replicas here despite both being valid RDS scaling/redundancy features.
+
 ## Backups & Restore
 
 Applies to both RDS and Aurora.

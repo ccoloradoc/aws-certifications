@@ -20,6 +20,8 @@ The base cheat sheet only mentioned "Run Command" — the rest of the SSM suite 
 - **Maintenance Windows** — a defined schedule (window + duration + registered instances) for running disruptive tasks like patching or driver updates
 - **Automation** — runs "Automation Runbooks" (SSM Documents, pre-built or custom) for common maintenance tasks (restart an instance, create an AMI/EBS snapshot); triggerable manually, via EventBridge, on a Maintenance Window schedule, or by AWS Config as a remediation action
 
+> Exam-wording cue: "**automate OS patching**, **centralized**, **least administrative overhead**," especially when instances already have an **IAM role with other custom policies attached** → **enable Default Host Management Configuration (DHMC) via Systems Manager Quick Setup**, then use **Patch Manager + a Maintenance Window** for the actual scheduled patching. DHMC auto-registers instances for SSM and creates/applies the required IAM role itself — fleet-wide, via one Quick Setup toggle — so you never have to manually attach `AmazonSSMManagedInstanceCore` to each instance's existing role yourself. Manually editing the IAM role (technically also correct) is the higher-overhead path DHMC exists to avoid; the presence of an **existing custom role** in the scenario is the tell pointing at DHMC specifically over manual role editing.
+
 ## Notes
 
 <!-- Your own notes go here. -->
