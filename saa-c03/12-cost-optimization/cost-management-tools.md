@@ -30,6 +30,16 @@ The base cheat sheet covered EC2 purchasing options but almost nothing else from
 
 > Exam-wording cue: "visualize/analyze/forecast spend over time" → Cost Explorer. "Automatically flag an unusual spend spike with no threshold to configure" → Cost Anomaly Detection (contrast with Budgets, which needs a manual threshold you set yourself). "Broad best-practice check across cost *and* performance/security/fault-tolerance" → Trusted Advisor, not a cost-only tool despite living in this category.
 
+## AWS Cost Optimization Hub
+
+- Consolidates cost-optimization recommendations (rightsizing, idle-resource deletion, Reserved Instances, Savings Plans) across all accounts/Regions in one dashboard, accounting for your existing discounts/commercial terms — the aggregator sitting above tools like Compute Optimizer
+
+## AWS Compute Optimizer
+
+- Analyzes actual utilization metrics (EC2, EBS, Lambda) and recommends a better-fitting resource configuration (e.g. a different instance type) for performance, cost, or both
+
+> Exam-wording cue: "**costs seem too high**," a modest multi-service footprint (EC2/RDS/S3), asked for a "**valid**" cost-optimization approach (not "the one best" answer) → **AWS Cost Optimization Hub** (consolidated, cross-account/Region view of idle resources, rightsizing, and RI/Savings Plan opportunities) **paired with AWS Compute Optimizer** (the detailed EC2 instance-type recommendation engine behind the rightsizing piece). Cost Optimization Hub aggregates *what* to look at; Compute Optimizer supplies the specific *instance-type* recommendation — the two work at different levels of the same problem, not as alternatives to each other.
+
 ## Notes
 
 <!-- Your own notes go here. -->

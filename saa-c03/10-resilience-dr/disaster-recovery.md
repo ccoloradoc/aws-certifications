@@ -19,6 +19,8 @@
 
 - **RPO** (Recovery Point Objective) — how much data loss (measured in time) is acceptable; **RTO** (Recovery Time Objective) — how long recovery is allowed to take. Cost/complexity increases from Backup & Restore (high RPO/RTO, cheapest) through Pilot Light → Warm Standby → Multi-Site/Hot Site (near-zero RTO, most expensive, full production scale running in both places)
 - Warm Standby specifically: a full, functional environment always running, but at minimum size — scale it up to production load on failover
+
+> Exam-wording cue: "a scaled-down version of a fully functional environment is always running," "recovery time kept to a minimum" → Warm Standby. "Fully functional" is the word that rules out Pilot Light (only core/critical components like the database run continuously — the rest of the stack must be launched from scratch on failover, so it isn't "fully functional" while idle). "Always running" rules out Backup and Restore (nothing runs until disaster strikes). Not running at full production scale rules out Multi-Site/Hot Standby (full scale in both locations continuously) — Warm Standby is specifically the middle ground: the whole stack exists and runs, just smaller, with recovery being a scale-up rather than a build-from-scratch or full-cost duplication.
 - Categories of DR groundwork, from the slides' recap:
   - **Backup** — EBS snapshots, RDS automated backups/snapshots, S3/S3-IA/Glacier lifecycle pushes + Cross-Region Replication, Snowball/Storage Gateway from on-prem
   - **High Availability** — Route 53 for DNS failover across regions, RDS/ElastiCache Multi-AZ, EFS, S3, Site-to-Site VPN as a DX fallback

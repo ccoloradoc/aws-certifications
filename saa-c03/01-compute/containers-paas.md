@@ -42,6 +42,10 @@
 
 > Exam-wording cue: "different pods/services in the same EKS cluster need different, isolated AWS permissions" → **IRSA**. The same requirement on ECS → **ECS Task IAM Role** (see above). Either way, "give the node/instance role broader permissions instead" is the wrong answer — it violates least privilege by granting access to everything running on that node, not just the workload that needs it.
 
+- **Two separate autoscaling layers, working together**: the **Horizontal Pod Autoscaler (HPA)** scales the number of **pods** based on a metric (e.g. CPU) — it has no concept of the underlying EC2 nodes at all. **Cluster Autoscaler** (or **Karpenter**, AWS's newer/faster alternative) scales the **EC2 worker nodes** themselves, by watching for pods that can't be scheduled due to insufficient node capacity and adding nodes (via the node group's ASG) to fit them — then removing nodes again once they're underutilized
+
+> Exam-wording cue: "**HPA** is scaling pods, but the **number of EC2 worker nodes stays constant** even at **max node utilization** / pods stuck **Pending**," need automatic **infrastructure** scaling, "**least operational overhead**" → **Kubernetes Cluster Autoscaler**, tied to the node group's Auto Scaling Group. HPA only ever decides *how many pods* should exist — it has zero visibility into node capacity, so once nodes are full, HPA can keep "succeeding" at wanting more pods while none of them actually get scheduled. Cluster Autoscaler is the separate, complementary layer that watches for that exact unschedulable-pod condition and adds node capacity to match. **Karpenter** solves the same problem faster (nodes online in under a minute vs. Cluster Autoscaler's several minutes via ASG) but requires managing its own controller — reach for Karpenter only when the question specifically emphasizes speed of node provisioning over simplicity.
+
 ## AWS Elastic Beanstalk
 
 - PaaS for quick application deployment

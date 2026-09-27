@@ -42,6 +42,8 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 
 > Exam-wording cue: "AWS service encrypts with KMS" → symmetric; "users outside AWS who can't call the KMS API need to encrypt data" or "sign/verify" → asymmetric. "Free, no control over the key policy" → AWS owned/managed; "control the key policy, rotation, or cross-account access" → customer managed.
 
+> Exam-wording cue: "**encrypted at rest**," key rotation must happen "**automatically every 12 months**," "**cost-effective**," "**least operational overhead**" → **SSE-KMS with the AWS Managed Key (`aws/s3`)**. AWS Managed Keys already rotate automatically every year with **zero configuration and no monthly fee** — a **Customer Managed Key** can match the same rotation cadence, but only if you **manually enable** automatic rotation and pay its **$1/month** per-key charge, making it the higher-overhead, less cost-effective option when the requirement is satisfied by the managed key's default behavior alone. Don't over-reach for a CMK just because the requirement mentions "rotation" — check whether the *default* AWS Managed Key behavior already covers it before reaching for the option that needs manual setup.
+
 ## Key Rotation
 
 - **AWS-managed keys** — rotate automatically every year

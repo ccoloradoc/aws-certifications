@@ -14,6 +14,8 @@
 ### Origins
 
 - CloudFront origin types: S3 bucket (secured via Origin Access Control — OAC, the newer replacement for OAI), VPC Origin (private ALB/NLB/EC2 in a private subnet, no internet exposure needed), or Custom HTTP origin (an S3 static website, or any public HTTP backend like a public ALB)
+- **Multi-origin routing by content type** — a single distribution can serve **different request types from different origins** (e.g. static content from an S3 bucket, dynamic content from an ALB) via **cache behaviors** matched on path patterns
+- **Origin Groups (failover/HA)** — configure a primary and secondary origin in an origin group; if the primary is unavailable or returns specific failure status codes, CloudFront **automatically switches to the secondary** — requires a distribution with at least two origins, an origin group combining them, and a cache behavior configured to use that group
 - **Custom Origin with on-premises resources** — a Custom HTTP origin can be any publicly-reachable HTTP(S) server, including one physically hosted on-premises (it just needs a public DNS name/IP CloudFront's edge locations can reach; it doesn't need to be an AWS resource at all). Lets an on-prem app gain CloudFront's edge caching, global acceleration, HTTPS termination, and WAF/Shield protection without migrating anything to AWS. Configure via Origin Protocol Policy (HTTP/HTTPS/match-viewer), origin port, and connection/response/keep-alive timeouts
   - **Security gap**: unlike an S3 origin (protected by OAC), a custom origin has no equivalent lock — nothing stops traffic from bypassing CloudFront and hitting the on-prem server directly, skipping caching/WAF entirely. Standard fix: CloudFront sends a **custom header with a secret value** on every request, and the origin server is configured to reject any request missing that header
 
@@ -39,6 +41,8 @@
 ### Other Features
 
 - **Field-level encryption** — extra encryption at the edge for sensitive fields (e.g., PII)
+
+> Exam-wording cue: "CloudFront capabilities on **routing, security, and high availability** — **select three**" → (1) **multi-origin routing by content type** (routing) — one distribution, different origins per path/content type via cache behaviors; (2) **Origin Groups for automatic failover** (high availability) — primary + secondary origin, auto-switches on primary failure; (3) **Field-Level Encryption** (security) — encrypts specific sensitive fields (up to 10 per request) at the edge, so only components with the decryption key ever see the plaintext, even inside your own application stack. Each answer maps to exactly one of the three named categories in the stem — a useful check when unsure which three to pick from a longer list of options.
 - Custom error page handling
 - Streaming content support
 - **Geo restriction** — whitelist/blacklist by country
@@ -52,6 +56,8 @@
 - **Lambda@Edge** — Node.js or Python, thousands of requests/sec; can hook all 4 points (Viewer Request/Response + Origin Request/Response); 128MB-10GB memory, 1-50MB package, 5-10s execution; has network/filesystem/request-body access, so it can call other AWS services (e.g. via the SDK); authored in us-east-1 and replicated globally by CloudFront; no free tier, billed per request+duration
 
 ## AWS Global Accelerator
+
+**Common exam-wording tells:** "global users," "multiple Regions," "reduce latency," "gaming/UDP/voice/video" or any non-HTTP protocol, "static IP requirement," "fast failover without DNS propagation delay," "too many IPs to allowlist across regional load balancers." If a question is about *caching* content → CloudFront. If it's about *routing packets faster/more reliably to compute* (including non-HTTP/UDP traffic) → Global Accelerator.
 
 - Increases availability and performance for global applications
 - Runs over the AWS global network (not the public internet)
@@ -76,6 +82,8 @@
 > Exam-wording cue: "**low-latency** distribution of a **proprietary application using UDP protocol**," "**BEST performance**" → **AWS Global Accelerator**. "**UDP protocol**" is the decisive word — it's a non-HTTP, transport-layer (L4) protocol, which immediately rules out **CloudFront** (HTTP/HTTPS only, and built around *caching*, which doesn't help with live, constantly-changing data anyway) and **ALB** (L7, HTTP only). Global Accelerator is the one edge-network service that proxies raw **TCP/UDP** onto AWS's private backbone, which is what actually delivers "BEST performance" for a live, low-latency, non-HTTP feed.
 
 > Exam-wording cue: "**many ALBs/NLBs across multiple Regions**, firewall/security-group rules are getting complex from **too many IP addresses to allowlist**" → **AWS Global Accelerator**'s **2 static anycast IPs** become the single fixed entry point — firewalls only ever need to allowlist those 2 IPs, no matter how many regional endpoints sit behind them or how often those endpoints' own IPs change. Distinct from the gaming/UDP/latency framing above: here the tell is specifically about **shrinking a firewall allowlist**, not raw latency — but it's the same underlying static-IP mechanic driving both answers.
+
+> Exam-wording cue: "**ALBs in multiple Regions**," traffic is "**inconsistent**"/"**varies**" over time, on-prem firewall needs to **allow the ALBs' IP addresses**, "**MOST scalable, minimal configuration changes**" → **AWS Global Accelerator**, with each regional ALB registered as an **endpoint**. The specific tell here beyond "many ALBs across regions" is that ALB IPs are **inherently unstable** under variable load (ALB itself has no static IP — its underlying IPs can shift as it scales) — so whitelisting individual ALB IPs isn't just tedious, it's actively unreliable. Global Accelerator's **2 fixed anycast IPs** are the one thing the on-prem firewall ever needs to whitelist, permanently, regardless of how the ALBs' own IPs change or how many regions get added later.
 
 ## Notes
 

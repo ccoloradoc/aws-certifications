@@ -12,6 +12,15 @@
 
 > Exam-wording cue: "**consistent resource provisioning** across **multiple AWS accounts/departments and Regions**," using the **same pre-defined configuration** (specific EC2 instance types, specific IAM roles, etc.) → **AWS CloudFormation StackSets** — deploys **one template** across many accounts/regions in a single operation, centrally enforced by an admin. This is a **push** model: distinct from **AWS Service Catalog**, which is a **self-service** model (end users browse and launch from a catalog of pre-approved products) — reach for Service Catalog when the question emphasizes end users **choosing** from approved options, and StackSets when it emphasizes a central team **enforcing the same configuration** everywhere.
 
+## AWS Service Catalog
+
+- Lets a central team define **"products"** — pre-approved CloudFormation templates (e.g. "an RDS instance with best-practice settings," "an EC2 instance of an approved type") — organized into **portfolios** that get shared with specific users/groups/accounts
+- End users **self-service launch** only from that catalog, via the console or CLI — they never touch the underlying CloudFormation template or configure the resource manually themselves
+- **Constraints** can restrict which parameters a launcher is even allowed to change (e.g. lock the instance type, or the encryption setting, to prevent deviation from the approved config)
+- Distinct from **StackSets** — see the comparison cue above
+
+> Exam-wording cue: "**mix of AWS experts and people learning AWS**," a user **misconfigured** a resource causing an outage, need **RDS/EC2/other best practices baked into a reusable template**, "**used by all your AWS users**" → **AWS Service Catalog** — publish a CloudFormation template encoding the correct configuration as a Service Catalog **product**, so every user self-service-provisions only from that vetted template instead of configuring the resource manually. A raw CloudFormation template alone doesn't solve this: nothing stops a user from still configuring the resource by hand in the console instead of using the template — Service Catalog is what makes the vetted template the **only** available self-service path.
+
 ## Notes
 
 <!-- Your own notes go here. -->

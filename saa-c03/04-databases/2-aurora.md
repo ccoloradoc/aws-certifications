@@ -29,6 +29,13 @@ Aurora is one of the engine options under RDS, but different enough to warrant i
 - **Aurora Serverless** auto-scales capacity, ideal for infrequent/unpredictable workloads, pay per second
   - **Exam scenario**: production runs on a full Aurora Cluster, and the dev team wants a scaled-down copy that can absorb occasional heavy workloads but sits unused most of the time — while minimizing cost. Fix: run the dev/test environment on **Aurora Serverless** — it auto-scales capacity up for the heavy workload and back down when idle, billed per-second, so an idle dev environment costs almost nothing, with no application changes needed since it's still Aurora-compatible
 
+## Storage Configuration: Standard vs. I/O-Optimized
+
+- **Aurora Standard** (default) — bills **per I/O request**, on top of storage/instance cost; cost-effective for I/O-light, predictable workloads
+- **Aurora I/O-Optimized** — a flat, higher storage/instance price with **no per-I/O charges at all**; a single configuration toggle at cluster creation/modification, no ongoing tuning. Becomes both **cheaper and more predictable** than Standard once I/O makes up a large share of the bill (a workload with spiky/unpredictable I/O volume, e.g. sudden traffic surges)
+
+> Exam-wording cue: "**sudden spikes** in traffic/engagement," need to "**optimize I/O performance**" and stay "**cost-effective**," "**without manual provisioning or tuning**" for **storage** specifically (compute already handled, e.g. by Serverless v2) → **Aurora I/O-Optimized**. Aurora Standard's per-I/O-request billing makes cost **unpredictable** under spiky/high-volume I/O — I/O-Optimized removes that variable entirely in exchange for flat pricing, which is what actually satisfies "cost-effective" here despite its higher sticker price per GB/instance. This is a distinct lever from **Aurora Serverless v2** (which scales *compute*) — a question isolating "storage configuration" specifically, after already naming Serverless v2 for compute, is pointing at I/O-Optimized, not at scaling compute further.
+
 ## Notes
 
 <!-- Your own notes go here. -->

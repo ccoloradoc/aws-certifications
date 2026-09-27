@@ -55,6 +55,8 @@ Controls whether a load balancer node in one AZ can distribute requests to targe
 - A load balancer uses an X.509 cert, managed via ACM or self-uploaded, to terminate SSL/TLS
 - SNI (Server Name Indication) lets a single listener serve multiple certs/domains — works on ALB, NLB, and CloudFront, but **not** on CLB (which is why CLB needs one cert per hostname)
 
+> Exam-wording cue: "**same load balancer**," multiple **different URLs/domains** (host-based like `checkout.mycorp.com` vs. `www.mycorp.com`, and path-based like `/profile` vs. `/search`) routed to **different target groups**, all as **HTTPS**, "**MINIMAL configuration effort**" → a **single ALB with one HTTPS listener using SNI** — attach multiple ACM certificates (one per domain) to that one listener, and use **listener rules** (host-based + path-based) to route each URL to its own target group. SNI is what avoids needing a separate listener (or separate load balancer) per domain — the client's TLS handshake indicates which hostname it wants, and the ALB serves the matching certificate from the same listener. **NLB** is ruled out outright here (no host/path routing at all, Layer 4 only); **CLB** is ruled out too (no SNI support — needs one certificate per hostname, the opposite of "minimal configuration").
+
 ## Application Load Balancer (ALB)
 
 - Layer 7 (HTTP/HTTPS) routing decisions

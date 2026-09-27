@@ -22,6 +22,8 @@
 
 > Exam-wording cue: "move **Windows file server** workloads off-prem, need **highly reliable file storage** accessible over **SMB**, Windows-compatible — **select two**" → **Amazon FSx for Windows File Server** (native SMB/NTFS, AD/ACL integration, purpose-built Windows file share — see [fsx.md](fsx.md)) **and** **AWS Storage Gateway's File Gateway** (SMB access to S3-backed storage, also AD-integrated). **EFS** is the standard wrong third option here — Linux-only, no SMB support at all, despite also being "cloud file storage."
 
+> Exam-wording cue: "**preserve access from local file systems**," "**optimize bandwidth during migration**," "**avoid retrieval fees or delays**," "**minimal application reconfiguration**," "**frequent local access**" → **AWS Storage Gateway — File Gateway**, backed by **S3 Standard/Standard-IA** (never Glacier, since Glacier's retrieval fees/delays directly conflict with "avoid retrieval fees"). File Gateway's local caching of hot data is what gives fee-free, delay-free access to frequently-used records, while the NFS/SMB interface means existing on-prem applications keep using ordinary file paths — no rewrite to call an S3 API. This is the specific combination that rules out both a raw S3 migration (would need app changes) and any Glacier-backed tier (retrieval fees/delays), leaving File Gateway as the only option satisfying every requirement simultaneously.
+
 ## Volume Gateway
 
 - Block storage using the iSCSI protocol, backed by S3
@@ -38,6 +40,8 @@
 - For companies with existing physical-tape backup processes — Tape Gateway lets them keep the same workflows, but in the cloud
 - Virtual Tape Library (VTL) backed by S3 and Glacier
 - Uses an iSCSI interface, and works with leading backup software vendors
+
+> Exam-wording cue: "**petabytes** of data on **physical tapes**," "**without changing** current tape backup **workflows**," "**cost-optimized**" → **AWS Storage Gateway — Tape Gateway**, presenting a **Virtual Tape Library (VTL)** that existing backup software (NetBackup, Veeam, etc.) treats exactly like physical tape infrastructure — no changes to backup schedules, jobs, or tooling. The virtual tapes are backed by **S3**, and can transition to **S3 Glacier/Deep Archive** for the lowest-cost long-term archival storage, matching "cost-optimized" at petabyte scale. This is the tell whenever a question emphasizes preserving an **existing tape-based** process specifically — not a general "move backups to S3" migration, which would instead point to something like DataSync or a direct S3 upload.
 
 ## Integrations
 

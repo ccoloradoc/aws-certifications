@@ -6,6 +6,8 @@
 - Pull-based (consumers poll for messages) — contrast with SNS's push model
 - Consumers poll (up to 10 messages/call), process, then call `DeleteMessage`; can run many consumers in parallel (horizontally scalable), commonly behind an ASG or as a buffer in front of a database write
 
+> Exam-wording cue: "process jobs **asynchronously**, **scale quickly**, jobs must be **retried in case of failures**, **minimize cost**, **select two**" → **Amazon SQS** (not SNS) **+ EC2 Spot Instances in an Auto Scaling Group**. "Retried in case of failures" is the tell for **SQS over SNS**: SQS's visibility timeout automatically makes an unprocessed message available for another consumer if a worker fails — SNS has no storage and no retry mechanic once delivery is attempted. That same built-in retry is *also* what makes **Spot** safe here: if a Spot Instance is interrupted mid-job, the in-flight message just becomes visible again and gets picked up by another worker — the workload's own fault-tolerance (via SQS) is what unlocks Spot's deepest discount for "minimize cost," the same logic as the EMR-on-Spot pattern elsewhere in these notes.
+
 ### Standard vs. FIFO
 
 - **FIFO** — rigorous message ordering, deduplication; 300 msg/s (3,000 batched) throughput, exactly-once via Deduplication ID, ordered within a Message Group ID
@@ -68,6 +70,10 @@
 - Managed message broker (ActiveMQ or RabbitMQ) with both queue (~SQS) and topic (~SNS) semantics in one service
 - For migrating on-prem brokers that use open protocols (MQTT, AMQP, STOMP, OpenWire, WSS) without re-architecting to SQS/SNS's proprietary APIs
 - Runs on provisioned servers (not serverless like SQS/SNS), so it doesn't scale as elastically; supports Multi-AZ with failover
+
+> Exam-wording cue: microservices communicate via a **message broker supporting MQTT** (or AMQP/STOMP/OpenWire), migrating to AWS "**without changing the application logic**" → **Amazon MQ**. SQS/SNS would require rewriting the messaging code to use AWS's own proprietary APIs instead — "without changing the application logic" specifically rules them out and points to a managed broker that speaks the **same open protocol** the application already uses.
+
+> Exam-wording cue: "**managed message broker**," "**ActiveMQ or RabbitMQ**," "**needs both queue and topic (pub/sub) semantics in one broker**," or a workload that **doesn't need to scale elastically/serverlessly** → **Amazon MQ**. This is the general tell distinguishing it from SQS/SNS beyond the protocol-migration angle: Amazon MQ runs on **provisioned broker instances** (Multi-AZ failover available, but not infinitely auto-scaling like SQS/SNS), and combines queue-like and topic-like behavior in **one** service/API — reach for it when the scenario is fundamentally about *replacing an existing broker* (ActiveMQ/RabbitMQ) rather than *building new* AWS-native messaging, which is where SQS/SNS remain the default, more scalable choice.
 
 ## Notes
 

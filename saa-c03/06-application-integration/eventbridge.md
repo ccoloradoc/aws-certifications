@@ -11,6 +11,8 @@
 
 > Exam-wording cue: compare against [sqs-sns.md](sqs-sns.md) — SQS/SNS move messages between producers and consumers; EventBridge reacts to *events* (state changes, schedules) and routes them to targets, with native filtering/schema support that SNS's plain pub/sub doesn't have.
 
+> Exam-wording cue: "**SaaS application** feeds updates to in-house **and third-party** applications, **asynchronously decouple**" → **Amazon EventBridge**, not SNS. EventBridge has **Partner Event Sources** — named, built-in integrations letting SaaS providers (Zendesk, Datadog, PagerDuty, MongoDB, etc.) push events **directly into your event bus**, with zero custom integration code. SNS has no equivalent — it's a generic broadcaster with no native SaaS-partner ingestion. Once ingested, EventBridge can still fan out to SNS/SQS/Lambda as targets, so the two aren't mutually exclusive — but when the *source* is a SaaS application/third-party integration, EventBridge is the layer that actually receives it.
+
 ## Notes
 
 <!-- Your own notes go here. -->

@@ -101,6 +101,8 @@ Organized by pipeline stage — the order these tools would actually be chained 
 
 > Exam-wording cue: "real-time stream processing/transformation using SQL or a Flink app" → Managed Service for Apache Flink. If the question is only about collecting/delivering the stream (not processing it), that's Data Streams/Data Firehose instead.
 
+> Exam-wording cue: "**EC2 continuously polls/checks a database for changes** to run analysis," need to **decouple**, "**analyzed in real-time without any data loss**," even under **huge traffic spikes** → replace the polling with the full **Kinesis pipeline**: **Kinesis Data Streams** (durable, replay-capable ingestion of the clickstream, replacing the direct-to-database write) → **Kinesis Data Analytics / Managed Service for Apache Flink** (real-time SQL/Flink processing directly on the stream, replacing the "poll the database" step entirely) → **Kinesis Data Firehose** (persists the *analyzed/output* records into S3 for durable storage). Each stage has a distinct job: Streams durably ingests and buffers against spikes, Flink analyzes in real time, Firehose is the final landing step for the processed result — not a second ingestion path for the raw data.
+
 ### AWS Glue
 
 - Fully serverless, managed **ETL** (Extract, Transform, Load) service — the tool that prepares/cleans/transforms raw data *before* it's analyzed elsewhere (Athena, Redshift, EMR, QuickSight); converts data to columnar Parquet/ORC to speed up and cut the cost of those downstream queries

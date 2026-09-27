@@ -7,6 +7,8 @@
 - Measures **RCUs** (read capacity units/sec) and **WCUs** (write capacity units/sec)
 - **Capacity modes**: Provisioned (plan RCU/WCU ahead of time, optional auto-scaling via Application Auto Scaling, cheaper) vs. On-Demand (auto-scales with load, no planning, more expensive, best for unpredictable/spiky workloads)
 
+> Exam-wording cue: "**not used during night hours**," "**unpredictable** during day hours," "**spikes occur very quickly**," "**best-fit**" → **DynamoDB On-Demand capacity mode**. "Very quickly" is the decisive detail: **Provisioned capacity + Application Auto Scaling** reacts to sustained utilization *after* a threshold is breached — it can't instantly absorb a sudden spike, only ramp up over time. **On-Demand** scales throughput **instantly** to match whatever's actually requested, with zero capacity planning, and costs nothing extra during the idle night hours since billing is per-request rather than per-provisioned-unit — matching both the "unpredictable, fast spikes" requirement and the "idle at night" cost concern at once.
+
 ## Table & Item Structure
 
 - Tables have a Primary Key decided at creation; unlimited items (rows)
@@ -29,6 +31,8 @@
 
 > Exam-wording cue: "DynamoDB reads are slow," a **hot partition key**, or "microsecond DynamoDB reads with no application code changes" → **DAX** — it's API-compatible with DynamoDB, so the app keeps calling the same operations while DAX transparently caches in front of them. "Cache session data," cache results from a **different** database/computation, or need Redis-specific features (pub/sub, sorted sets) → **ElastiCache** instead, which requires you to write the cache-aside logic yourself (check cache → miss → query DynamoDB → write back to cache) rather than being transparent like DAX. See [4-elasticache.md](4-elasticache.md).
 
+> Exam-wording cue: "**highly popular** items (e.g. celebrity/star user records) cause a **hot partition**, even after **increasing RCUs**," fix it "**without a lot of application refactoring**" → **DAX**. "Already increased RCUs, still hot" is the specific tell that rules out just scaling throughput — a table's aggregate RCU is distributed across its key space, so it does nothing for traffic concentrated on **one** partition key's physical partition. The traditional fix for a hot key (redesigning the partition key with a random/calculated suffix to spread it across multiple partitions) *would* require refactoring — which the question is explicitly ruling out — leaving **DAX** as the answer that absorbs the hot-key read load transparently, via a drop-in client swap rather than a data-model change.
+
 ## TTL (Time-to-Live)
 
 - Auto-deletes items past an expiry timestamp attribute; use cases: trimming stored data to only current items, regulatory data-retention limits, web session expiry
@@ -36,6 +40,9 @@
 ## Backups & S3 Integration
 
 - Backups: continuous PITR (optional, up to 35 days, restore creates a new table) vs. on-demand full backups (kept until explicitly deleted, manageable via AWS Backup including cross-region copy) — neither affects live performance
+- **Deletion Protection** — a table-level setting that blocks `DeleteTable` entirely (regardless of the caller's IAM permissions) until someone first explicitly disables it as a separate step; no downtime/performance impact to enable, off by default
+
+> Exam-wording cue: "**accidentally deleted a table**," "**prevent future data loss from human error**," "**minimal ongoing maintenance**" → **enable DynamoDB Deletion Protection** — a single table-level setting that blocks `DeleteTable` entirely (regardless of the caller's IAM permissions) until someone first explicitly disables it as a separate step. This is distinct from **PITR**: PITR protects against **bad data within an existing table** and lets you restore into a new table after the fact; Deletion Protection prevents the **table itself** from being deleted in the first place. A scenario emphasizing "**prevent**" (not "recover from") **table deletion** specifically is the tell for Deletion Protection over PITR.
 
 > Exam-wording cue: "application **occasionally writes corrupted/bad data**, need to **remove it as soon as the issue is detected**" → **enable DynamoDB Point-in-Time Recovery (PITR)**, then **restore to a new table at the exact timestamp just before the corruption occurred** and reconcile the clean data back in. PITR's per-second granularity within the last 35 days is what makes "restore to the moment right before an unpredictable, intermittent bad write" possible — a fixed-schedule on-demand backup wouldn't reliably land at the right moment, and DynamoDB Streams only reacts to changes going forward, it can't undo data already written.
 - **Export to S3** — needs PITR enabled, covers any point in the last 35 days, doesn't consume read capacity, outputs DynamoDB JSON or ION (good for analysis/ETL/audit snapshots)

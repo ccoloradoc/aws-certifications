@@ -13,6 +13,8 @@
 
 > Exam-wording cue: migrating a **SQL Server** workload while wanting to **enhance security** and **minimize database management/operational burden** → standard, fully-managed **Amazon RDS for SQL Server** — not **RDS Custom** (grants privileged OS access, which *increases* operational burden, the opposite of what's asked), and not **Aurora** (doesn't support SQL Server as an engine at all, so it isn't a valid option regardless of appeal). Reach for RDS Custom only when the scenario explicitly needs privileged host-level access for a third-party app's requirements.
 
+> Exam-wording cue: migrating a **Microsoft SQL Server** database, wanting **maximum possible availability** while **minimizing operational/management overhead** → **RDS for SQL Server with Multi-AZ enabled** — Multi-AZ is a single toggle on standard, fully-managed RDS (no manual failover scripting, no OS management), giving synchronous replication and automatic failover for the highest availability RDS offers. **Aurora** is invalid here regardless of appeal (no SQL Server engine support); **RDS Custom** or self-managed SQL Server on EC2 would both *increase* overhead by granting/requiring OS-level management the question explicitly wants to avoid.
+
 ## RDS Storage Auto Scaling
 
 - Scales storage automatically when free space is **<10% of allocated storage for 5+ minutes**, and at least **6 hours** have passed since the last storage modification
@@ -27,6 +29,8 @@
 
 - **Read Replicas** (async replication, for read scaling) — up to 15, within-AZ/cross-AZ/cross-region; eventually consistent; promotable to standalone DBs; read-only (SELECT only); no network cost for same-region replication; use case: run reporting/analytics without hitting the production DB
   - Each replica has its **own separate DNS endpoint** — the application must be explicitly configured/coded to send read traffic to it; there's no automatic request routing between primary and replica
+
+> Exam-wording cue: "**RDS** (not Aurora) under **heavy read load**," "**increase read throughput**," "**without changing the application's core logic**" → **add RDS Read Replica(s)** and point read-only queries at the replica's endpoint. "Core logic" specifically means the SQL/business logic itself — pointing reads at a different **connection endpoint** is a configuration change, not a logic change, which is why Read Replicas satisfy this constraint while an **ElastiCache** cache-aside layer would not (it requires new cache-check/cache-write *code*, not just a config change).
   - **Data transfer charges**: replication traffic between the primary and a **same-region** read replica is **free** (no data transfer charge at all); a **cross-region** read replica incurs standard **inter-region data transfer pricing** on that replication traffic
 
 > Exam-wording cue: "single-region app, latency complaints from one specific distant region (e.g. Aurora in us-east-1, complaints from Europe), select two" → create a **Read Replica in the nearby region** (e.g. eu-west-1), paired with a **regional web-tier fleet + Route 53 Latency routing** on the compute side (see [route53.md](../02-networking/route53.md)). This gives European users local, low-latency reads instead of round-tripping every query across the Atlantic — a more literal fix than accelerating the path to a single origin region (which is what Aurora Global Database / Global Accelerator would do instead, also valid but a different architecture).
@@ -67,7 +71,12 @@ Applies to both RDS and Aurora.
 
 - At-rest encryption via KMS — must be set at launch; an unencrypted master means its replicas can't be encrypted either (see Backups & Restore above for the fix)
 - In-flight is TLS-ready by default
-- IAM Authentication as an alternative to username/password
+- **Enforcing in-transit encryption**: RDS supports TLS/SSL by default, but connections aren't encrypted unless the **client** requests it — download the AWS RDS **CA certificate bundle** and configure the client/application to connect with SSL (`sslmode=require` or `verify-full` for PostgreSQL clients). To make this mandatory rather than optional, set the **`rds.force_ssl = 1`** parameter (PostgreSQL) in the instance's parameter group — this rejects any connection attempt that isn't using SSL, closing the gap where TLS-capable but not TLS-enforced could still allow an unencrypted connection
+
+> Exam-wording cue: "**end-to-end security for data-in-transit** while accessing the database," RDS already has **KMS encryption at rest** → the remaining piece is **enforcing SSL/TLS for connections**, not something already covered by at-rest encryption. Download the RDS **CA certificate**, configure the client to connect over SSL, and set **`rds.force_ssl`** (via the parameter group) so the database **rejects** any non-SSL connection attempt — "TLS-ready by default" alone isn't "end-to-end," since a client can still connect unencrypted unless the database is explicitly configured to refuse that.
+- **IAM Database Authentication** — generates short-lived (15-minute-validity) auth tokens via the RDS API instead of a static password; requires **two** things together: (1) enable IAM Database Authentication **on the RDS instance itself**, and (2) grant the connecting principal (e.g. a Lambda execution role) an IAM policy allowing **`rds-db:connect`**, scoped to that specific DB instance/user. Neither alone is sufficient — enabling it on the instance without the caller's IAM permission means nothing can authenticate that way; granting the IAM permission without enabling it on the instance means the database still doesn't accept tokens as a credential type at all
+
+> Exam-wording cue: "**Lambda connects to RDS** using a **username/password**," improve security via "**short-lived credentials** — select two" → **enable IAM Database Authentication on the RDS instance** **+** **grant the Lambda execution role an IAM policy for `rds-db:connect`**. "Short-lived" is the specific tell for IAM auth tokens (15-minute validity) over Secrets Manager rotation (which still uses a stored, longer-lived password/secret, just rotated periodically) — IAM Database Authentication replaces the credential mechanism entirely rather than just rotating it.
 - Security Groups control network access
 - No SSH except RDS Custom
 - Audit logs can stream to CloudWatch Logs

@@ -44,6 +44,8 @@
 
 > Exam-wording cue: a question about **backup/failover connectivity for an existing Direct Connect** connection, with cost or speed-of-setup emphasized, points to a **Site-to-Site VPN** — not a second DX connection. A second DX connection is the answer only when the question explicitly demands DX-level bandwidth/consistency for the backup path too (i.e. "Maximum Resiliency," see above).
 
+> Exam-wording cue: "**dedicated private connection**" to AWS, "**guarantee uptime**" via a **backup** that's allowed to use the **public internet** as long as it's **encrypted** — **select two** → **AWS Direct Connect** (the dedicated private link) **+ AWS Site-to-Site VPN** (the encrypted, internet-based failover). Direct Connect has no built-in redundancy of its own; VPN is the standard, cheaper backup path specifically because it's already an encrypted tunnel over the public internet — no need for a second, costly DX connection just to handle failure scenarios.
+
 ### Virtual Private Gateway (VGW)
 
 - The AWS-side VPN concentrator, attached to the VPC you're connecting; ASN is customizable
@@ -69,10 +71,14 @@
 - Route tables on the TGW itself limit which attached VPCs can reach each other (segmentation)
 - Works with Direct Connect Gateway and VPN connections; is the only AWS networking construct that supports IP Multicast
 - Can also be used to share a single Direct Connect connection across multiple accounts
+
+> Exam-wording cue: "**simple solution**" to connect **VPCs and on-premises networks** "**through a central hub**," "**LEAST operational overhead**" → **AWS Transit Gateway**. "Central hub" is the literal tell — it rules out VPC Peering outright, since Peering has no hub concept at all (point-to-point only, non-transitive). Transit Gateway is the one managed resource that unifies both connection types at once: VPCs attach directly for transitive VPC-to-VPC routing, and on-premises reaches the same hub via a Direct Connect Gateway or VPN attachment — replacing what would otherwise be a full mesh of Peering connections plus separately-managed VPN/DX Gateway setups per VPC.
 - **Centralizing PrivateLink access**: when multiple VPCs/accounts are already hub-and-spoke connected via TGW and all need private access to the same AWS service (Interface VPC Endpoint), deploy that endpoint **once in a single "shared services" VPC** and route every spoke VPC to it through the existing TGW — instead of duplicating the endpoint (and its per-AZ, per-VPC hourly cost) in every spoke individually
 - **ECMP (Equal-Cost Multi-Path)** — spreads traffic across multiple Site-to-Site VPN tunnels to multiply bandwidth (e.g. combining tunnels for 2.5/5.0/7.5 Gbps); billed per-GB of TGW-processed data on top of the VPN cost
 
 > Exam-wording cue: need more bandwidth out of a **Site-to-Site VPN** beyond a single tunnel's cap (~1.25 Gbps) → **ECMP** across multiple VPN tunnels via Transit Gateway. Need more bandwidth out of **Direct Connect** itself → provision a **LAG (Link Aggregation Group)** or a faster/additional DX connection, not ECMP — ECMP only multiplies VPN tunnel throughput through a TGW, it doesn't apply to DX.
+
+> Exam-wording cue: "**surge in traffic**" across an existing **Site-to-Site VPN**, users experiencing **slower connectivity**, "**maximize the VPN throughput**" → **ECMP across multiple VPN tunnels via a Transit Gateway**. The slowdown is the tell that a single tunnel's ~1.25 Gbps cap has been hit — no per-tunnel setting fixes that, since it's a hard ceiling, not a tunable parameter. ECMP is what actually multiplies aggregate bandwidth by spreading traffic across several tunnels at once (e.g. 2.5/5.0/7.5 Gbps by combining tunnels), at the cost of TGW's per-GB data-processing charge on top of the existing VPN cost.
 
 > Exam-wording cue: "multiple VPCs/accounts already connected via **Transit Gateway**, need **shared access to a common AWS service**, reduce cost **and** admin overhead" → **centralize Interface VPC Endpoints in one shared-services VPC**, reached by every spoke through the existing Transit Gateway — not one endpoint per VPC. TGW already provides the connectivity; use it to avoid duplicating endpoint deployments (and their per-AZ, per-VPC cost) across every account.
 

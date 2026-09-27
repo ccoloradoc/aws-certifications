@@ -8,7 +8,6 @@ Not covered in the base cheat sheet at all — serverless compute is core to SAA
 - Concurrency: reserved vs. provisioned concurrency, throttling
 - Cold starts and how to mitigate them
 - Memory/CPU/timeout configuration and how they relate to cost
-- Lambda layers
 - VPC-attached Lambda (ENI cost, NAT requirements for internet access)
 - Event source mappings (SQS, Kinesis, DynamoDB Streams)
 - Lambda@Edge vs. CloudFront Functions (see [cloudfront-and-global-accelerator.md](../02-networking/cloudfront-and-global-accelerator.md))
@@ -26,6 +25,10 @@ Not covered in the base cheat sheet at all — serverless compute is core to SAA
 - Cold starts: happen when a new execution environment initializes (loads code + runs init code outside the handler) — the first request on that instance is slower; **Provisioned Concurrency** pre-warms environments so cold starts never happen (can be scaled by Application Auto Scaling on a schedule or target utilization)
 - **Lambda SnapStart** (Java/Python/.NET) — up to 10x faster starts at no extra cost by invoking from a pre-initialized, cached snapshot (memory+disk state) taken when you publish a new version
 - VPC-attached Lambda: by default Lambda runs outside your VPC and can't reach RDS/ElastiCache/internal ELBs; attaching it requires specifying VPC/subnets/security groups, and Lambda creates an ENI in your subnet to reach those resources
+- **Lambda Layers** — package reusable code/libraries (shared across multiple functions) as a Layer, and attach it to any function that needs it, instead of duplicating that code in each function's own deployment package
+- **Operational best practice**: since Lambda can scale extremely quickly, set a **CloudWatch Alarm** on `ConcurrentExecutions` or `Invocations` exceeding an expected threshold — catches runaway concurrency growth or invocation spikes before they cause account-level throttling or unexpected cost, rather than discovering it after the fact
+
+> Exam-wording cue: "**key considerations for Lambda as a serverless backbone** — select three" → (1) **default (non-VPC) Lambda** has direct internet/AWS-API access; **VPC-enabled** Lambda needs a **NAT Gateway** for the same public access; (2) monitor **`ConcurrentExecutions`/`Invocations`** via **CloudWatch Alarms**, since Lambda's fast scaling can silently run into account-level concurrency limits; (3) use **Lambda Layers** to share reusable code across multiple functions instead of duplicating it in each deployment package. Three genuinely separate concerns (networking, monitoring, code organization) — don't expect them to reduce to one theme.
 - Lambda + RDS Proxy: putting RDS Proxy in front of a database avoids connection exhaustion from many concurrent Lambda invocations; the Lambda function must itself be VPC-attached since RDS Proxy is never public
 - Lambda@Edge vs CloudFront Functions — see [cloudfront-and-global-accelerator.md](../02-networking/cloudfront-and-global-accelerator.md) for the full comparison
 - Step Functions — see [orchestration.md](../06-application-integration/orchestration.md)
