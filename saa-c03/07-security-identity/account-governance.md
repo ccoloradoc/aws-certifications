@@ -8,9 +8,15 @@
 
 > Exam-wording cue: SCPs never *grant* permissions on their own — they set the maximum boundary an account (and everything in it, including its root user) can ever do, evaluated on top of whatever IAM policies grant within that account. "Restrict what an entire account/OU can do" → SCP; "grant a user/role permission within one account" → IAM policy.
 
+> Exam-wording cue: a scenario stating a user has **root-level access** to their own account, and asking how to **still restrict** what they can do (e.g. prevent them from modifying/disabling a mandatory CloudTrail trail) → the answer is always an **SCP**, never an IAM policy or permissions boundary — those constructs only ever apply to IAM users/roles and are structurally incapable of restricting the root identity itself. "Root user" + "must not be able to change X" is the standard tell pointing to SCPs.
+
 ## IAM Policy Mechanics
 
 - **IAM Roles vs. Resource-Based Policies** for cross-account access: assuming a role means giving up your own permissions for the role's; a resource-based policy (S3 bucket policy, SNS topic, SQS queue) lets the caller keep their own permissions while also being granted access to the resource — useful when, e.g., a user in Account A needs to read Account A's DynamoDB table *and* write to an S3 bucket in Account B without switching roles
+
+> Exam-wording cue: "Lambda/EC2/user in **Account A** needs to access an **S3 bucket (or SNS/SQS resource) in Account B**" → **IAM policy on the caller's role/user (Account A) + a resource-based policy naming that principal (Account B)** — both sides required, neither alone is sufficient. Reach for **role assumption** (`sts:AssumeRole` + trust policy) instead only when the caller needs to fully **act as** a different identity in the target account, not just reach one specific resource.
+
+> Exam-wording cue: same pattern, but for an **EC2 instance** specifically — the network path becomes a real, testable requirement, unlike a non-VPC-attached Lambda. "EC2 instance in Account A reaches an S3 bucket in Account B, minimize cost / avoid internet exposure" → **IAM instance-profile role policy + S3 bucket policy naming that role + an S3 Gateway VPC Endpoint in Account A's own VPC** (free, private — no NAT Gateway needed). The endpoint only needs to exist in the *caller's* VPC; S3 isn't VPC-resident in Account B, so there's nothing to configure network-wise on the resource-owner's side.
 - **IAM Policy Evaluation Logic**: evaluation starts assuming Deny; if any applicable policy has an explicit Deny, that wins immediately; otherwise SCPs, resource policies, and identity policies are all evaluated together — an explicit Allow somewhere along with no explicit Deny results in Allow
 - IAM Conditions worth knowing: `aws:SourceIp` (restrict caller IP), `aws:RequestedRegion` (restrict target region), `ec2:ResourceTag`/`aws:PrincipalTag` (tag-based restrictions), `aws:MultiFactorAuthPresent` (require MFA for an action)
 - S3 permission scope: actions like `s3:ListBucket` apply at the bucket level (`arn:...:bucket-name`); actions like `s3:GetObject`/`PutObject`/`DeleteObject` apply at the object level (`arn:...:bucket-name/*`)
@@ -27,13 +33,16 @@
 
 ## AWS Directory Service
 
-- **Microsoft Active Directory (AD)** — found on any Windows Server with AD Domain Services; a database of objects (user accounts, computers, printers, file shares, security groups) with centralized security management (create accounts, assign permissions); objects are organized in trees, and a group of trees is a forest
-- **AWS Managed Microsoft AD** — create your own AD in AWS, manage users locally, supports MFA; establish "trust" connections with your on-premises AD
-- **AD Connector** — directory gateway (proxy) that redirects to on-premises AD, supports MFA; users are managed on the on-premises AD
-- **Simple AD** — AD-compatible managed directory on AWS; cannot be joined with on-premises AD
+**Background** — Microsoft Active Directory (AD) is found on any Windows Server with AD Domain Services: a database of objects (user accounts, computers, printers, file shares, security groups) with centralized security management (create accounts, assign permissions); objects are organized in trees, and a group of trees is a forest. AWS Directory Service offers three distinct ways to get AD (or AD-like) functionality into your AWS environment:
+
+- **AWS Managed Microsoft AD** — AWS hosts a genuine, full-featured Microsoft AD for you in your VPC; manage users locally, supports MFA, and can establish a **trust relationship** with your on-premises AD so identities flow between the two. Best when you need real AD (trusts, full feature set, AD-dependent enterprise apps) hosted *in* AWS
+- **AD Connector** — not a directory at all, just a **proxy/gateway** that redirects authentication requests to your **existing on-premises AD**; no user data is duplicated in AWS, users stay managed entirely on-prem; supports MFA. Best when you already have AD on-prem and just want AWS services to authenticate against it
+- **Simple AD** — a standalone, AD-*compatible* directory living entirely in AWS, with **no on-premises connection at all** (cannot be joined to an on-prem AD, no trust relationships). Best for basic directory needs — simple user/group management for a workload — where you don't need real AD feature parity or on-prem integration; cheaper/simpler than Managed Microsoft AD as a trade-off for that reduced feature set
 - Other services that integrate with AD: [FSx for Windows](../03-storage/fsx.md), [SMB file gateway](../03-storage/storage-gateway.md)
 
 > Exam-wording cue: "users stay managed in the on-prem AD, AWS just proxies" → **AD Connector**; "AWS-hosted AD with a trust relationship to on-prem" → **AWS Managed Microsoft AD**; "AD-compatible directory that never needs to join on-prem AD" → **Simple AD**.
+
+> Exam-wording cue: Simple AD vs. AWS Managed Microsoft AD is a **feature-completeness/cost trade-off**, not a networking one — both live entirely in AWS with no on-prem dependency. Need trust relationships, full AD compatibility, or support for AD-dependent enterprise applications → **Managed Microsoft AD**. Need cheap, basic user/group management with no such requirements → **Simple AD**.
 
 ## Notes
 

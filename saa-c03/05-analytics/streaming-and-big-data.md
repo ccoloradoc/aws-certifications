@@ -43,6 +43,8 @@ Organized by pipeline stage — the order these tools would actually be chained 
 - Kinesis is built for real-time big-data/analytics/ETL with shard-level ordering, replay capability, and a configurable expiration window
 - See [sqs-sns.md](../06-application-integration/sqs-sns.md) for SQS (pull-based, deleted after consumption, ordering only on FIFO) and SNS (push pub/sub, fan-out) detail
 
+> Exam-wording cue: **both SQS and Kinesis are durable** (replicated across AZs) — durability isn't what separates them. The difference is the **retention/replay model** once data is read: **SQS** deletes a message once a consumer acknowledges it (`DeleteMessage`) — durable *until* processed, but gone after, no replay. **Kinesis** retains every record for the full retention window (up to 365 days) **regardless of whether it's been consumed** — any consumer can re-read past records, and multiple independent consumers can each process the same data separately. So: "prevent data loss from a burst, decouple producer from consumer" → either works. "**Replay** data after it's already been processed" or "**multiple independent consumers** need to read the same stream" → **Kinesis specifically**, since SQS's delete-on-consume model can't do either.
+
 ### Amazon MSK (Managed Streaming for Apache Kafka)
 
 - **Alternative to Kinesis** — same real-time streaming role, but running actual open-source Apache Kafka rather than an AWS-proprietary service; reach for MSK when migrating an existing Kafka workload, or when you need Kafka-specific APIs/ecosystem tooling (Kafka Connect, ksqlDB, existing Kafka producers/consumers) that Kinesis doesn't speak
@@ -116,6 +118,8 @@ Organized by pipeline stage — the order these tools would actually be chained 
 - **Node types**: Master (long-running, coordinates), Core (long-running, runs tasks + stores data), Task (optional, usually Spot, compute only)
 - **Purchasing options**: On-Demand (reliable), Reserved (1yr+ savings, used automatically when available), Spot (cheapest, less reliable)
 - Clusters can be long-running or transient; besides processing, EMR can also *query* (Presto/Hive) — see [redshift-athena.md](redshift-athena.md) for the dedicated SQL-analytics services
+
+> Exam-wording cue: a workload that's **short-lived/infrequent** (e.g. a monthly ~2-hour job), **distributable across many instances of varying size**, and can **withstand server/node failures** → **EMR (transient cluster) on Spot Instances** is the most cost-optimal choice — the workload's inherent fault-tolerance (distributed frameworks redistribute lost work) is exactly what makes Spot's interruption risk acceptable, unlocking the deepest discount. If the workload *couldn't* tolerate losing nodes, Spot would be wrong regardless of cost.
 
 ## Store & Catalog
 

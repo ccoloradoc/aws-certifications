@@ -6,6 +6,8 @@
 
 > Exam-wording cue: "limit the maximum permissions a **specific IAM role/user** can have, even permissions delegated by someone else" → **Permissions Boundary**. "Limit the maximum permissions for an **entire AWS account or OU** in an Organization, affecting everyone including root" → **SCP** (Service Control Policy) — same "ceiling, not a grant" concept, but SCPs live in AWS Organizations and apply account/OU-wide, while a permissions boundary is IAM-level and applies to one identity.
 
+> Exam-wording cue: a permissions boundary can only be attached to an IAM **user or role** — **never a group**. An answer option that says "define a permissions boundary **on the group**" is a reliable distractor, no matter how organizationally sensible it sounds; the technically correct (if more repetitive) approach is attaching the boundary to **each individual user/role**.
+
 - Global service; root account is created by default and shouldn't be used/shared day-to-day
 - **Users** map to a physical person; **Groups** contain only users (not other groups); a user can belong to multiple groups or none
 - **Policies** are JSON documents attached to users/groups defining permissions (apply least privilege)

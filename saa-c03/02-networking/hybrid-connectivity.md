@@ -67,9 +67,12 @@
 - Route tables on the TGW itself limit which attached VPCs can reach each other (segmentation)
 - Works with Direct Connect Gateway and VPN connections; is the only AWS networking construct that supports IP Multicast
 - Can also be used to share a single Direct Connect connection across multiple accounts
+- **Centralizing PrivateLink access**: when multiple VPCs/accounts are already hub-and-spoke connected via TGW and all need private access to the same AWS service (Interface VPC Endpoint), deploy that endpoint **once in a single "shared services" VPC** and route every spoke VPC to it through the existing TGW — instead of duplicating the endpoint (and its per-AZ, per-VPC hourly cost) in every spoke individually
 - **ECMP (Equal-Cost Multi-Path)** — spreads traffic across multiple Site-to-Site VPN tunnels to multiply bandwidth (e.g. combining tunnels for 2.5/5.0/7.5 Gbps); billed per-GB of TGW-processed data on top of the VPN cost
 
 > Exam-wording cue: need more bandwidth out of a **Site-to-Site VPN** beyond a single tunnel's cap (~1.25 Gbps) → **ECMP** across multiple VPN tunnels via Transit Gateway. Need more bandwidth out of **Direct Connect** itself → provision a **LAG (Link Aggregation Group)** or a faster/additional DX connection, not ECMP — ECMP only multiplies VPN tunnel throughput through a TGW, it doesn't apply to DX.
+
+> Exam-wording cue: "multiple VPCs/accounts already connected via **Transit Gateway**, need **shared access to a common AWS service**, reduce cost **and** admin overhead" → **centralize Interface VPC Endpoints in one shared-services VPC**, reached by every spoke through the existing Transit Gateway — not one endpoint per VPC. TGW already provides the connectivity; use it to avoid duplicating endpoint deployments (and their per-AZ, per-VPC cost) across every account.
 
 ## Notes
 

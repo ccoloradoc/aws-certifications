@@ -11,6 +11,8 @@
 
 > Exam-wording cue: "need privileged OS/database-host access to support a third-party app's special configuration or patching requirements, on Oracle or SQL Server" → **RDS Custom** — standard RDS deliberately blocks this kind of access as part of being fully managed. If the scenario also emphasizes HA, remember Multi-AZ isn't a given here; it must be set up explicitly, unlike the "just toggle it" experience on standard RDS.
 
+> Exam-wording cue: migrating a **SQL Server** workload while wanting to **enhance security** and **minimize database management/operational burden** → standard, fully-managed **Amazon RDS for SQL Server** — not **RDS Custom** (grants privileged OS access, which *increases* operational burden, the opposite of what's asked), and not **Aurora** (doesn't support SQL Server as an engine at all, so it isn't a valid option regardless of appeal). Reach for RDS Custom only when the scenario explicitly needs privileged host-level access for a third-party app's requirements.
+
 ## RDS Storage Auto Scaling
 
 - Scales storage automatically when free space is **<10% of allocated storage for 5+ minutes**, and at least **6 hours** have passed since the last storage modification
@@ -19,10 +21,17 @@
 - Avoids manual storage scaling — useful for unpredictable growth patterns
 - Not relevant to Aurora, which grows storage automatically as part of its own distributed-storage architecture (see [aurora.md](2-aurora.md))
 
+> Exam-wording cue: "database might run out of **storage**" + "**urgent**, **minimum development/administration effort**" → **enable RDS Storage Auto Scaling** on the existing instance — a single native setting, no migration, no cutover, no compatibility testing. Migrating to **Aurora** also solves storage growth long-term (its distributed storage scales automatically), but it's the wrong answer *here* since a migration itself requires real planning/testing/cutover effort — disproportionate to a narrow, already-solved-by-a-toggle problem, and directly conflicting with "urgent" + "minimum effort." Reach for Aurora when the question is instead about performance, read scaling, or multi-region reach — not when it's purely "storage might run out, fix it now with minimal effort."
+
 ## Read Replicas vs. Multi-AZ
 
 - **Read Replicas** (async replication, for read scaling) — up to 15, within-AZ/cross-AZ/cross-region; eventually consistent; promotable to standalone DBs; read-only (SELECT only); no network cost for same-region replication; use case: run reporting/analytics without hitting the production DB
   - Each replica has its **own separate DNS endpoint** — the application must be explicitly configured/coded to send read traffic to it; there's no automatic request routing between primary and replica
+  - **Data transfer charges**: replication traffic between the primary and a **same-region** read replica is **free** (no data transfer charge at all); a **cross-region** read replica incurs standard **inter-region data transfer pricing** on that replication traffic
+
+> Exam-wording cue: "single-region app, latency complaints from one specific distant region (e.g. Aurora in us-east-1, complaints from Europe), select two" → create a **Read Replica in the nearby region** (e.g. eu-west-1), paired with a **regional web-tier fleet + Route 53 Latency routing** on the compute side (see [route53.md](../02-networking/route53.md)). This gives European users local, low-latency reads instead of round-tripping every query across the Atlantic — a more literal fix than accelerating the path to a single origin region (which is what Aurora Global Database / Global Accelerator would do instead, also valid but a different architecture).
+
+> Exam-wording cue: "RDS read replica data transfer charges" → **free within the same region**, **charged across regions** (standard cross-region data transfer rate) — not "always free" or "always charged" regardless of location. Mirrors the general AWS pattern (same-region/same-AZ traffic is cheapest, cross-region/egress is where cost shows up).
 - **Multi-AZ** (sync replication, for HA/failover) — single DNS name with automatic failover to a standby; purely for HA/DR, not scaling
   - The application always points at the **same** endpoint — failover silently repoints that DNS name to the new primary, with no application changes needed
 - **Converting Single-AZ → Multi-AZ**: zero-downtime operation — no need to stop the DB, just click "Modify" on the instance. Internally:
@@ -38,10 +47,17 @@
 Applies to both RDS and Aurora.
 
 - **Automated backups**: daily full backup + continuous transaction logs (5-minute granularity) enable **Point-in-Time Restore (PITR)** — restore to any point, typically up to 5 minutes ago; retention 1-35 days (RDS can disable with 0, Aurora cannot disable)
+  - The daily full backup runs during a configured **backup window**; if it needs more time than the window allows, it simply continues past the window until finished — it doesn't get cut off. The backup window can't overlap the weekly maintenance window
+  - Despite the "daily" backup, the underlying mechanism is continuous/incremental — that's what makes the **~5-minute-ago latest restorable time** possible, not just restoring to yesterday's snapshot
+  - **No performance impact on the live database** while backup data is being written — this is what makes restoring from an automated backup a safe way to spin up a separate copy (e.g. a dev/staging database) without competing for I/O with production, unlike a manual full logical copy
 - **Manual snapshots** are kept indefinitely
 - A stopped RDS instance still bills for storage — snapshot & restore instead if stopping long-term
+
+> Exam-wording cue: "**heavy read load** on RDS/Aurora" + "**a recurring full logical copy** of production (e.g. to populate a dev database) is causing latency/I/O contention" + "open to migrating engines" → migrate to **Aurora** for read-scaling/HA via Read Replicas, and replace the manual full-copy process with **restoring a new cluster from Aurora's automated backups** (or **Aurora Database Cloning** for a faster, copy-on-write alternative) — either way, the fix is to stop taking a manual logical copy and instead use Aurora's built-in, zero-production-impact copy mechanisms.
 - Restoring a backup/snapshot always creates a **new** database; can also restore an on-premises MySQL/Aurora backup uploaded to S3
 - Encrypting an existing unencrypted DB requires snapshot → encrypt the copy → restore from the encrypted copy
+
+> Exam-wording cue: "how do I encrypt an **existing, already-running** unencrypted RDS instance" → always **snapshot → copy with encryption enabled (specify a KMS key during the copy) → restore a new instance from that encrypted copy → cut over**, never "enable encryption on the existing resource" — that option doesn't exist. Whether a DB instance's storage is encrypted is fixed at creation time, the same immutable-property pattern as a KMS key's single- vs. multi-Region setting; the only path is create-new-from-an-encrypted-copy, never an in-place conversion.
 
 ## Security
 

@@ -28,6 +28,8 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 - **KMS Keys** is the new name for KMS Customer Master Key (CMK)
 - See [Key Rotation](#key-rotation) for the rotation details per type
 
+> Exam-wording cue: "encryption key usage must be **logged/auditable**" → rules out **AWS Owned Keys** (SSE-S3/SSE-SQS/default SSE-DDB) entirely — no CloudTrail visibility for you, since it's not even a key in your account. Both **AWS Managed Keys** and **Customer Managed Keys** satisfy this, since usage is logged in CloudTrail for both — the requirement alone doesn't tell you which of the two to pick; check the rotation and cross-account/key-policy requirements for that.
+
 ### By Cryptography
 
 - **Symmetric (AES-256)** — a single key used to both encrypt and decrypt; what AWS services integrated with KMS use; you never get the key unencrypted — you must call the KMS API to use it
@@ -46,6 +48,8 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 - **Customer-managed keys** — automatic rotation (must be enabled) or on-demand rotation
 - **Imported keys** — manual rotation only, by swapping the alias to point at a new key
 
+> Exam-wording cue: "encryption key usage must be logged" + "rotated every year" + "**MOST operationally efficient**" → **SSE-KMS with an AWS Managed Key** — it satisfies logging (CloudTrail) and yearly rotation with **zero configuration**, since AWS Managed Keys rotate automatically by default. A Customer Managed Key also technically satisfies both requirements, but costs more operational effort since **you** must explicitly enable rotation on it — don't default to CMK just because it sounds more "secure/controlled" when the question is only asking about logging + rotation, not about key-policy control or cross-account sharing (which *would* require a CMK, since AWS Managed Keys can't be shared cross-account).
+
 ## Key Policies
 
 - Control access to KMS keys, "similar" to S3 bucket policies — but mandatory: you *cannot* control access to a KMS key without one
@@ -62,6 +66,8 @@ Keys are classified along two independent axes: **who owns/manages them** and **
 - **Global Aurora + client-side encryption** — same pattern using the AWS Encryption SDK; protects specific fields even from database admins, since decryption requires access to the key
 
 > Exam-wording cue: "data must be encrypted client-side and **not disclosed even to the company's own admins**" → rules out server-side/SSE-KMS (DB admins can still read decrypted data through the engine) — the answer is **client-side encryption with the AWS Encryption SDK**, key access restricted via the KMS key policy to the app role only. Add "**worldwide customers**, **lowest latency**, multi-Region DB (Global Aurora/DynamoDB Global Tables)" → use a **KMS Multi-Region key** so each Region decrypts with a low-latency *local* KMS call instead of crossing Regions to a single-Region key.
+
+> Exam-wording cue: "encrypted data replicated cross-region, but must use the **same encryption key** in every region" → **KMS Multi-Region Keys** — a standard (single-Region) KMS key is disqualified by definition, since it can't exist outside its own region; CRR's default behavior of re-encrypting with a separate destination-region key is exactly the behavior this requirement is ruling out. Crucially, a **single-Region key can never be converted/mutated into a Multi-Region key** — whether a key is single- or multi-Region is set permanently at creation and is immutable. The only valid path: **create a brand-new Multi-Region primary key + replica key**, then **decrypt the existing data and re-encrypt it under the new Multi-Region key** (e.g. via `ReEncrypt`, or an S3 Batch Operations job) — you cannot just "upgrade" the key already protecting the data in place. Any answer option describing "changing"/"converting" an existing key into a Multi-Region key is automatically wrong.
 
 ## Service Integration Patterns
 

@@ -69,6 +69,8 @@
 - CloudFront serves content at the edge (great for cacheable + dynamic HTTP content)
 - Global Accelerator proxies packets at the edge to your regional apps over TCP/UDP (better for non-HTTP cases like gaming/UDP, IoT/MQTT, VoIP, or HTTP cases needing static IPs / fast deterministic regional failover)
 
+> Exam-wording cue: "**global users, multiple regions, NLB, non-cacheable/real-time traffic (video/voice/gaming), reduce latency, keep existing infrastructure**" → **Global Accelerator** — routes onto AWS's private backbone from the nearest edge instead of the public internet, additive on top of existing NLBs/EC2 (register them as endpoints, no re-architecture), and works for TCP/UDP where CloudFront's HTTP-caching model doesn't apply. DNS-based routing (Route 53 latency policy) alone only picks the *right region* — it doesn't fix the *path* traffic takes to get there, which is specifically what Global Accelerator adds.
+
 ## Notes
 
 <!-- Your own notes go here. -->

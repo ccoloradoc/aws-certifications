@@ -60,7 +60,9 @@ Controls whether a load balancer node in one AZ can distribute requests to targe
 - Layer 7 (HTTP/HTTPS) routing decisions
 - Path-based, host-based, query-string, or header-based routing
 - Can route to multiple ports per ECS container (dynamic port mapping)
-- OIDC authentication via Cognito
+- **Native authentication** — an `authenticate-cognito` (or `authenticate-oidc`, for any OIDC-compliant IdP) action configured directly on a listener rule; ALB handles the entire OAuth2/OIDC login flow itself (redirects unauthenticated requests to the IdP's login page), forwarding only authenticated requests to the target group — zero application code required, purely a listener rule configuration
+
+> Exam-wording cue: "decouple/offload authentication from the application, ALB already in the architecture, minimal development effort" → **ALB native authentication (`authenticate-cognito`/`authenticate-oidc`)** — no custom code, just a listener rule. If there's no ALB in the architecture (e.g. pure CloudFront + S3/API Gateway), the zero-code option disappears — a Lambda@Edge/CloudFront Function checking auth would require writing and maintaining that code yourself, a step up in effort from ALB's built-in action.
 - Health checks
 - Access logs to S3
 - Inserts the original client IP into the `X-Forwarded-For` request header (also `X-Forwarded-Port`, `X-Forwarded-Proto`), since the backend otherwise only sees the ALB's own IP

@@ -5,9 +5,14 @@
 - Linux only (not supported on Windows)
 - POSIX permissions control file access
 - Objects unused for 90 days can transition to **EFS IA** (Infrequent Access) for cost savings
+
+> Exam-wording cue: "**file storage**" + "**concurrent access from hundreds of EC2 instances**" → **EFS** — rules out S3 (object storage, not a mountable filesystem) and EBS (single-instance, or Multi-Attach capped at 16 same-AZ instances, nowhere near "hundreds"). "Less frequently accessed" + "**immediate** access whenever needed" → **EFS-IA**, not S3 Glacier — "immediate" specifically rules out anything requiring a restore/retrieval wait; EFS-IA still gives millisecond, on-demand access at the cheaper tier.
 - Protected by EFS Security Groups — each **mount target** is an ENI in a VPC subnet, and like any ENI it has an attached security group; the mount target's SG must allow inbound **NFS (port 2049)** from the client's SG (or CIDR), and the client must allow outbound on that same port
+- **On-premises access** (e.g. via Direct Connect Private VIF, or Site-to-Site VPN): the client reaches EFS through the **mount target's ENI directly**, over NFS (port 2049) — same mechanism as any VPC-internal client, just routed in from on-prem. EFS also has a **PrivateLink Interface VPC Endpoint**, but that's for the **EFS API/control-plane calls** (`DescribeFileSystems`, `CreateAccessPoint`, etc.) — **not** for the actual file data path; no NFS traffic flows through it
 
 > Exam-wording cue: "restrict which instances/subnets can even connect to an EFS file system" → **Security Groups on the mount targets** (network-layer gate — can you reach port 2049 at all). "Restrict what a connected client can read/write once mounted" → **POSIX permissions** (or IAM + Access Points for finer-grained, per-client-path control) — SGs don't control file/directory-level access, only network reachability.
+
+> Exam-wording cue: an answer describing on-prem-to-EFS data transfer (e.g. via DataSync) as going through a "**PrivateLink interface VPC endpoint for EFS**" is describing the wrong path for the actual file data — that endpoint is for EFS **API/management calls** only. Real file access (DataSync or any NFS client) always goes directly to the **mount target's ENI**, over NFS port 2049, reached via Direct Connect (Private VIF) or VPN routing into that subnet.
 
 ## Cross-Account Access
 

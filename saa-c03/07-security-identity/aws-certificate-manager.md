@@ -28,6 +28,8 @@ Not mentioned in the base cheat sheet — ties directly into ALB and CloudFront 
 - ACM sends daily expiration events starting **45 days** before expiry (the number of days is configurable); the events appear in EventBridge
 - AWS Config has a managed rule, `acm-certificate-expiration-check`, that checks for expiring certificates (configurable number of days) — see [aws-config.md](aws-config.md)
 
+> Exam-wording cue: "notify **N days** before an **imported/third-party** ACM certificate expires, least scripting/maintenance" → both native options are zero-code and valid, but differ in precision. **AWS Config managed rule `acm-certificate-expiration-check`** lets you explicitly set `daysToExpiration = N` — the cleaner match when the requirement states a specific, deliberate day count (e.g. "30 days"). **ACM's own native EventBridge event** ("Certificate Approaching Expiration") only fires on its **fixed** schedule (45/30/15/7/3/1 days) — it satisfies the requirement only when N happens to match one of those checkpoints. Either way, remember **ACM never auto-renews an imported certificate** — that's exclusive to ACM-issued certs actively in use with an integrated service.
+
 ## Integrations
 
 ### Load Balancers

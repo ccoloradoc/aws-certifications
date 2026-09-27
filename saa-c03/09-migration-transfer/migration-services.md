@@ -6,6 +6,8 @@
   > Frequent exam point: DataSync preserves file permissions/metadata (POSIX, SMB).
 
 - **AWS Transfer Family** — fully managed FTP/FTPS/SFTP endpoint in front of S3 or EFS; scalable, reliable, Multi-AZ; pay per provisioned endpoint-hour + data transfer; stores user credentials itself or integrates with AD/LDAP/Okta/Cognito/custom auth; use cases: file sharing, public datasets, CRM/ERP integration
+
+> Exam-wording cue: "legacy vendors/partners need **SFTP/FTP/FTPS** (not S3 API), fully managed, no infrastructure, **federated per-user access scoped to specific S3 buckets/prefixes**" → **AWS Transfer Family** with a **custom identity provider** (or AD/LDAP/Okta/Cognito) mapping each user to a scoped IAM role/session policy. If a scenario doesn't require the SFTP/FTP protocol specifically (the vendor could call an API or use a pre-signed URL instead), Transfer Family is unnecessary overhead — the protocol requirement is the specific tell that points here.
 - **AWS Import/Export** — physically ship storage devices (HDDs) to import large datasets into S3; legacy predecessor to the [Snow Family](snow-family.md)
 - Large one-time transfer rule of thumb: 200TB over a 100Mbps internet/VPN link ≈ 185 days; over 1Gbps Direct Connect ≈ 18.5 days (DX setup itself often takes a month+); via Snowball ≈ about a week end-to-end, combinable with DMS for the cutover; for ongoing replication, prefer Site-to-Site VPN or DX paired with DMS/DataSync rather than one-off transfers
 
@@ -45,7 +47,14 @@
 
 ## Resource Sharing
 
-- **AWS Resource Access Manager** — share resources (e.g., Transit Gateway) across accounts
+- **AWS Resource Access Manager (RAM)** — lets one "owner" account share specific resources with other AWS accounts, so those accounts can use them directly instead of duplicating or connecting to them separately
+  - Shareable resources include: **VPC subnets** (VPC Sharing), Transit Gateways, License Manager configurations, Route 53 Resolver rules, and others
+  - **Sharing is free** — RAM itself adds no cost; you only pay for the underlying resource as usual
+  - **Within the same AWS Organization**: shares are accepted automatically, no manual invitation step needed
+  - **Outside an Organization** (an explicitly invited external account): the recipient account must manually accept the resource share invitation
+- **VPC Sharing** (RAM's most commonly-tested use case): the owner account shares one or more **subnets** of its VPC with other accounts; those accounts can then launch their own resources (EC2, RDS, etc.) **directly into the shared subnets**. Since every participant's resources are actually sitting in the **same VPC**, they communicate as ordinary same-VPC traffic — no VPC Peering, Transit Gateway, or any other connecting construct is needed, and there's no inter-VPC data transfer charge, since there's no "inter-VPC" traffic to begin with
+
+> Exam-wording cue: "multiple accounts **within an AWS Organization**, single region, need to communicate privately, **cheapest**" → **VPC Sharing via AWS RAM** — sharing subnets puts everyone in one VPC, avoiding both the full-mesh complexity of VPC Peering *and* the inter-VPC data transfer cost either Peering or Transit Gateway would still carry. Reach for **VPC Peering** instead only when each account must keep its **own separate VPC** (e.g. for isolation/compliance reasons) rather than sharing one; reach for **Transit Gateway** when you need centralized routing/transitive connectivity across many *separate* VPCs, accepting its extra hourly + per-GB cost for that operational simplicity.
 
 ## Notes
 

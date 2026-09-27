@@ -27,6 +27,8 @@
 - **Cached volumes** — low-latency access to most-recently-used data; the primary dataset lives in AWS
 - **Stored volumes** — the entire dataset stays on-premises, with scheduled backups to S3
 
+> Exam-wording cue: "hybrid DR, data available on AWS **and** on-premises must be **uniform**" (the full dataset, not just hot data) → **Stored Volumes** — the entire dataset stays on-prem for low-latency local access, while being asynchronously backed up to S3 in full. "Primary data should live in AWS, only cache hot data locally" → **Cached Volumes** instead — the primary/authoritative copy is in S3, on-prem only holds a subset.
+
 ## Tape Gateway
 
 - For companies with existing physical-tape backup processes — Tape Gateway lets them keep the same workflows, but in the cloud

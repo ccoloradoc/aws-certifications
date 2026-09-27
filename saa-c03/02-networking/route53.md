@@ -10,6 +10,9 @@
 
 - Container for a domain's records; Public (internet-routable) vs Private (routes within one or more VPCs); $0.50/month per hosted zone
 - TTL — high TTL means less Route 53 traffic but possibly stale records; low TTL means more traffic/cost but fresher records; TTL is mandatory on every record except Alias records
+- **Private Hosted Zone requirements**: associating a private hosted zone with a VPC isn't enough on its own — the VPC must also have both **`enableDnsSupport`** and **`enableDnsHostnames`** set to `true`. `enableDnsSupport` controls whether the VPC's Amazon-provided DNS resolver answers queries at all; `enableDnsHostnames` controls whether instances get DNS hostnames. Both default to `true` for console-created VPCs, but can be `false` on VPCs created via CLI/CloudFormation with non-default settings
+
+> Exam-wording cue: "private hosted zone associated with a VPC, but queries don't resolve" → check that the VPC has both **`enableDnsSupport`** and **`enableDnsHostnames`** set to `true` — this is the standard root cause, not a hosted zone or record misconfiguration.
 
 ## Routing Policies
 
@@ -18,10 +21,14 @@ Define how Route 53 *responds* to DNS queries — don't confuse this with load b
 - **Weighted** — splits traffic by relative weight (a record's share = its weight ÷ sum of all weights); weights don't need to add up to 100; all records for a weighted set must share the same name and type; can be associated with Health Checks; set a record's weight to 0 to stop sending it traffic (if every record has weight 0, they're all returned equally); use cases: load balancing across regions, canary-testing a new app version
 - **Latency-based** — routes to the resource/region with the lowest latency for the user, based on measured latency between users and AWS Regions (not physical distance — different from Geolocation)
 - **Failover** — active/passive routing based on health checks
+
+> Exam-wording cue: "hybrid DR — on-prem is primary, AWS is the failover site, least downtime" → **Route 53 Failover routing** with a health check on the on-prem endpoint, paired with an **already-running** (not dormant) environment on the AWS side — e.g. EC2 in an Auto Scaling group behind an ALB, kept warm rather than launched fresh on failover (which would be the slower Pilot Light pattern instead).
 - **Geolocation** — route based on user location, specified by Continent, Country, or US State; if locations overlap, the most specific match wins; should always define a "Default" record to catch unmatched queries; can be associated with Health Checks; use cases: website localization, restricting content distribution, load balancing
 - **Geoproximity** — route based on the geographic location of users *and* resources, with an optional bias to shift traffic: expand a resource's reach (bias 1 to 99) or shrink it (bias -1 to -99); resources can be AWS (specify region) or non-AWS (specify latitude/longitude); requires Route 53 Traffic Flow
 
 > Exam-wording cue: routing decided by **user location only** (country/state/continent), e.g. "restrict content to a specific country" or "serve localized content by region" → **Geolocation**. Routing decided by **actual measured network latency**, e.g. "fastest response time for users" → **Latency-based**. Routing that needs to **shift traffic volume toward/away from a resource** via a bias value, or involves non-AWS/on-prem endpoints by lat/long → **Geoproximity** (the only one of the three that can deliberately shrink or expand a resource's effective radius). "Location" in the question wording ≠ automatically Geolocation — check whether it's about compliance/content restriction (Geolocation) vs. speed (Latency) vs. shifting load with a bias (Geoproximity).
+
+> Exam-wording cue: "single-region app, latency complaints from one specific distant region (e.g. EC2 web tier in us-east-1, complaints from Europe), select two" → deploy a **second EC2 fleet in the nearby region** (e.g. eu-west-1) **+ enable Latency-based routing in Route 53**, so each user is automatically sent to whichever regional fleet responds fastest for them. This literally removes the cross-region hop for the web tier, rather than just accelerating the path to a single origin (which is what Global Accelerator would do instead — also valid, but a different architecture than "duplicate the fleet regionally").
 
 - **Multi-Value Answer** — returns up to 8 healthy records per query; can be associated with Health Checks (only healthy resources are returned); not a substitute for a real ELB
 - **IP-based** — maps CIDR blocks of client IPs to specific endpoints; use cases: optimize performance, reduce network costs (e.g. route an ISP's users to a specific endpoint)

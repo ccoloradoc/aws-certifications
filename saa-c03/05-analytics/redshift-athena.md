@@ -25,8 +25,12 @@
 - Pricing: $5.00 per TB of data scanned
 - Commonly used with QuickSight for reporting/dashboards; use cases include BI/analytics/reporting and querying VPC Flow Logs, ELB logs, CloudTrail trails
 - **Performance tips**: use columnar formats (Parquet/ORC — convert with Glue) to cut scan volume and cost, compress data (bzip2/gzip/lz4/snappy/zlib/zstd), partition S3 data by virtual columns (e.g. `s3://bucket/path/year=1991/month=1/day=1/`) for query pruning, and prefer larger files (>128MB) to minimize overhead
+
+> Exam-wording cue: a data lake zone that's **repeatedly written to by an ETL job** (e.g. daily batches) and **actively queried by Athena** tends to accumulate many small files over time — this directly inflates Athena's per-query cost, since Athena bills per TB scanned and small files add per-file read overhead. The fix is a **Glue job to compact the small files into fewer, larger files** (ideally also converting to Parquet/ORC in the same job), not a storage-class change — compaction addresses *query* cost (Athena scan cost/time), while Intelligent-Tiering/Glacier address *storage* cost; a data-lake cost question distinguishing "raw/compliance-only zone" (→ Glacier) from "actively-queried refined zone" (→ Glue compaction) is testing whether you know these are two different cost levers, not interchangeable fixes.
 - **Federated Query** — run SQL across relational/non-relational/object/on-prem sources via Lambda-based Data Source Connectors (e.g. CloudWatch Logs, DynamoDB, RDS), writing results back to S3
 - Native encryption support (client/server-side)
+
+> Exam-wording cue: "inspect/explore a new dataset already sitting in S3 with **ad hoc** queries, **before** deciding whether it needs to enter a downstream transformation/ETL pipeline, minimal infrastructure" → **Athena** — no cluster to provision (rules out EMR/Redshift), no data movement required (data stays in S3), and querying happens *before* committing to a transformation workflow, not as part of one.
 
 ## Redshift vs. Athena
 

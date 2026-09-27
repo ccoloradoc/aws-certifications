@@ -58,6 +58,8 @@
 
 > Exam-wording cue: "extract insights/sentiment/entities from free-form text" → Comprehend. "Extract text/data from a scanned document/form/table" → Textract (below) — Comprehend analyzes text that's already digitized, Textract is what digitizes it in the first place.
 
+> Exam-wording cue: "Textract already extracted the text (scanned PDFs/documents digitized), now analyze **emotional tone**/sentiment and **subject matter**/topics, least operational burden" → **Textract → Amazon Comprehend** as a two-step managed pipeline, no custom ML model to train. "Emotional tone" is the tell for Comprehend's sentiment analysis; "subject matter" is the tell for its key-phrase/entity/topic-modeling capability — both are pre-built, no SageMaker needed.
+
 ## Amazon SageMaker AI
 
 - Fully managed service to build/train/deploy ML models in one place, instead of stitching together infra yourself

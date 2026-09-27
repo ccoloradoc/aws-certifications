@@ -23,6 +23,15 @@ Manages versioning (v1/v2), environments (dev/test/prod), auth, API keys, thrott
 - **Regional** — for same-region clients; can still be manually paired with CloudFront for more cache control
 - **Private** — VPC-only, reached via an interface VPC endpoint, access governed by a resource policy
 
+## Resource Policies & IP Restriction
+
+- **Resource Policy** — an IAM-style JSON policy attached directly to a **REST API** (not a role/user, the API resource itself), controlling who can invoke it at the API Gateway layer, before any request reaches the backend integration
+- Restrict by IP using the `aws:SourceIp` condition key with `IpAddress`/`NotIpAddress` operators — e.g. `Deny` on `NotIpAddress` for everything except a trusted CIDR range (an explicit allow-list)
+- **REST APIs only** — HTTP APIs (the newer, cheaper API Gateway type) do not support resource policies at all
+- **Security Groups don't apply here**: a public API Gateway endpoint has no ENI of its own, so there's nothing to attach a Security Group to. The only place an SG becomes relevant is a **Private API's Interface VPC Endpoint** ENI — and even then it only gates VPC-internal traffic, not arbitrary internet-source IPs
+
+> Exam-wording cue: "restrict an API Gateway REST API to specific IP ranges, nothing more" → **Resource Policy with IpAddress/NotIpAddress** — simplest, native, no extra cost. "Restrict by IP **and** need broader web-attack protection (SQLi/XSS/rate-limiting/geo-block)" → **WAF Web ACL** instead. If the API is an **HTTP API** (not REST), resource policies aren't an option at all.
+
 ## Authentication & Custom Domains
 
 - Auth options: IAM roles (internal apps), Cognito (external/mobile user identity), or a custom authorizer (your own logic)

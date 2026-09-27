@@ -148,6 +148,8 @@ The flip side of [What can have a security group?](#what-can-have-a-security-gro
 | Direct Connect Virtual Interface (VIF) | **No** | Operates at the DX connection level, outside any single VPC's ENIs |
 | Elastic IP | **No** | An IP address that gets *attached to* an ENI, not an ENI itself |
 
+> Exam-wording cue: the deciding question for "does this need a network path (NAT Gateway/IGW, or a VPC Endpoint) to reach an AWS service like S3/DynamoDB?" isn't *which service it is* — it's **"does this resource have an ENI in a VPC?"** EC2, RDS/Aurora, ElastiCache, Redshift, and **ECS/EKS tasks on Fargate** (Fargate still gets an ENI in your subnet — it's server-free, not network-free): always **yes**, always need a path. **Lambda**: only **if explicitly VPC-configured** — its default (no VPC attachment) has no ENI at all, reaches AWS service endpoints directly over AWS's internal network, and is the one common exception to this rule. The moment a Lambda is VPC-attached, it loses that exemption and needs the same path as everything else.
+
 ## Security Groups
 
 - The fundamental unit of network security in AWS; control inbound/outbound traffic to/from an EC2 instance; contain only rules (no explicit deny); rules can reference an IP range or another security group

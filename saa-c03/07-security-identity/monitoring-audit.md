@@ -24,6 +24,21 @@
 
 > Exam-wording cue: all three sound like generic "security scanners" but ask different questions. **GuardDuty** — "is something suspicious happening?" (threat/anomaly detection across account activity, network traffic, DNS). **Inspector** — "is this resource vulnerable?" (CVE/vulnerability scanning of EC2, ECR images, Lambda). **Macie** — "is sensitive data exposed?" (PII/sensitive-data discovery, S3 only). If the question mentions PII or sensitive data classification → Macie; CVEs/vulnerabilities on compute → Inspector; anomalous account/network behavior → GuardDuty.
 
+## AWS Security Hub
+
+- Aggregates and prioritizes **findings** (not raw logs) from GuardDuty, Inspector, Macie, IAM Access Analyzer, Firewall Manager, and third-party tools into one consolidated dashboard with a security score
+- Natively supports **multi-account aggregation** across an AWS Organization, via a delegated administrator account — no custom code needed
+- Findings can route to EventBridge for automated response workflows
+- Runs automated compliance checks against standards (e.g. CIS AWS Foundations Benchmark, PCI DSS)
+
+## Amazon Security Lake
+
+- Automatically collects, normalizes (into **OCSF** — Open Cybersecurity Schema Framework), and centralizes **raw security logs/events** — CloudTrail, VPC Flow Logs, Route 53 Resolver logs, GuardDuty findings, etc. — from across AWS accounts/Organizations and third-party sources
+- Stores everything in an **S3-based data lake you own**, in your own account
+- **Purely a centralization/normalization/storage layer** — it does not evaluate security posture, score anything, or detect threats on its own; you (or a subscriber service, SIEM, or Athena queries) must separately analyze the data to get insights out of it
+
+> Exam-wording cue: "centralize raw security **logs/events** for later analysis/SIEM ingestion" → **Amazon Security Lake**. "Aggregate/evaluate already-detected **findings** into a posture score/dashboard, least development effort" → **AWS Security Hub** — the word "**evaluate security posture**" specifically points to Security Hub, since Security Lake has no built-in evaluation capability of its own; it just gives you unified raw data that still needs separate querying/tooling to become insights.
+
 ## CloudWatch vs. CloudTrail vs. Config
 
 - **CloudWatch** — performance monitoring (metrics/dashboards), events/alerting, log aggregation — see [cloudwatch.md](../08-management-governance/cloudwatch.md)

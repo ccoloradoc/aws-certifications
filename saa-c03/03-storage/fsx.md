@@ -32,6 +32,8 @@
 - Multi-AZ capable (high availability)
 - Data is backed up daily to S3
 
+> Exam-wording cue: "**DFSR** (Distributed File System Replication)" between multiple on-prem Windows file servers → migrate to **FSx for Windows File Server, Multi-AZ** — this eliminates the need for replication entirely by centralizing into one managed, highly-available file system, rather than replicating DFSR's mechanics in the cloud. "**DFS Namespaces**" (organizing/grouping shared folders across servers) → FSx for Windows' native DFSN support instead — a distinct DFS feature from DFSR, solved by the `- Supports Microsoft's Distributed File System (DFS) Namespaces` bullet above, not by Multi-AZ alone.
+
 ## FSx for Lustre
 
 - Built for HPC workloads — no Windows support
@@ -58,6 +60,8 @@
 - Supports snapshots, replication, low-cost compression and data deduplication
 - Point-in-time instantaneous cloning — helpful for testing new workloads
 
+> Exam-wording cue: "just need **SMB** file sharing, simple setup, least administrative overhead" → **FSx for Windows File Server**. "Need **multi-protocol** (NFS + SMB + iSCSI simultaneously), snapshots/cloning, or migrating an existing NetApp/ONTAP workload" → **FSx for NetApp ONTAP** instead — its extra capability comes with extra operational concepts (SVMs, volumes, ONTAP-specific tooling), which is the wrong trade when a question explicitly asks for the least overhead and only names SMB.
+
 ## FSx for OpenZFS
 
 - Managed OpenZFS file system on AWS — move workloads running on ZFS to AWS
@@ -71,6 +75,9 @@
 - **ECS/Fargate** — supports FSx for Lustre and FSx for NetApp ONTAP as task volumes (alongside EBS and EFS)
 - **AWS Backup** — supports FSx (Lustre and Windows File Server), with cross-region and cross-account backups
 - **AWS DataSync** — can target any FSx file system (Windows, Lustre, NetApp ONTAP, OpenZFS) as a sync destination, alongside S3 and EFS
+- **Lambda does NOT support FSx** (any variant, including Lustre) as a mountable file system — only **EFS** is mountable from Lambda
+
+> Exam-wording cue: "share a file system across many EC2 instances or containers (ECS/EKS/Fargate)" → **FSx for Lustre** works fine — that's its core design (a parallel filesystem for many concurrent compute nodes). "Share a file system with a **Lambda function**" → must be **EFS**; FSx (Lustre or any other variant) cannot be mounted from Lambda at all.
 
 ## Notes
 

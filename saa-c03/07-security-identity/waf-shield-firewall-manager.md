@@ -6,6 +6,9 @@ Not covered in the base cheat sheet — notable security gap around DDoS/applica
 
 - Protects web applications from common web exploits at **Layer 7** (HTTP; Layer 4 is TCP/UDP)
 - Deploys on: Application Load Balancer, API Gateway, CloudFront, AppSync GraphQL API, Cognito User Pool
+
+> Exam-wording cue: any requirement to attach **WAF** automatically rules out **NLB** as the load balancer choice — WAF only attaches to Layer 7 resources (ALB, API Gateway, CloudFront, AppSync, Cognito), never a Layer 4 NLB. If NLB appears as an option alongside a WAF requirement, it's a distractor by definition, no matter how appealing "high performance" or "static IP" framing makes it sound — the fix is **ALB (+ ASG for scaling) with WAF attached**, the standard minimal-complexity pattern for "scalable, HA, WAF-protected" requirements.
+
 - **Web ACL rules** can match:
   - IP sets — up to 10,000 IP addresses per rule; use multiple rules for more
   - HTTP headers, HTTP body, or URI strings — protects from SQL injection and Cross-Site Scripting (XSS)
@@ -18,6 +21,8 @@ Not covered in the base cheat sheet — notable security gap around DDoS/applica
 > Exam-wording cue: "restrict/allow access to an **ALB** by country/geography" → **WAF Web ACL with a geo-match rule** attached to the ALB — the ALB itself has no native geo-filtering. If **CloudFront** is already in front of it, geo-restriction can also be done natively at the CloudFront distribution level, without WAF. If the resource is an **NLB**, geo-match via WAF isn't possible at all — WAF only attaches to Layer 7 resources (see the NLB/WAF cue above).
 
 > Exam-wording cue: "application needs a **fixed/static IP** *and* **WAF protection**" → **Global Accelerator + ALB with WAF attached**. The tempting wrong answer is an NLB (which gives static IPs per AZ), but WAF can't attach to an NLB — it's Layer 4. Also: NLB alone can't do L7 filtering, so "filter HTTP requests" rules it out.
+
+> Exam-wording cue: in a **CloudFront + ALB/EC2 origin** architecture, blocking a malicious **client IP** must be done via a **WAF Web ACL IP rule on CloudFront** — not a Security Group on the ALB/EC2. Once CloudFront proxies a request to its origin, the origin only ever sees **CloudFront's own IP addresses** as the connection source, never the real client's — a Security Group filtering by source IP at that layer can't distinguish the attacker from legitimate traffic at all. "Update the Security Group to block the IP" is a reliable distractor whenever CloudFront sits in front of the attacked resource.
 
 ### Blocking an IP Address (Scenarios)
 

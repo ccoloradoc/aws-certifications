@@ -17,22 +17,36 @@ AWS offers 300+ EC2 instance types across 5 instance families, each with varying
 - **On-Demand Instances** — pay per second/hour, no commitment
 - **On-Demand Capacity Reservations** — reserve capacity in an AZ; no time commitment, no discount, billed at On-Demand rate whether used or not; combine with Reserved Instances/Savings Plans to add a discount
 - **Spot Instances** — 50–90% discount, can be reclaimed by AWS
-  - **Spot Fleets** — a set of Spot (+ optional On-Demand) instances across multiple launch pools; allocation strategies: `lowestPrice`, `diversified`, `capacityOptimized`, `priceCapacityOptimized` (recommended default)
+  - **Spot Fleets** — a set of Spot (+ optional On-Demand) instances across multiple launch pools, launched to meet a target capacity; by default automatically replaces terminated Spot Instances to keep target capacity maintained. Allocation strategies:
+    - **`lowestPrice`** — always picks whichever pool is currently cheapest; best when you just want the absolute lowest cost and don't need a specific instance type/size (the fleet decides the instance type for you from across its diversified pools)
+    - **`diversified`** — spreads instances across multiple pools to reduce the impact of any single pool being interrupted
+    - **`capacityOptimized`** — picks pools AWS predicts are least likely to be interrupted (favors stability over lowest price)
+    - **`priceCapacityOptimized`** (recommended default) — balances both: looks at pools with the best capacity availability, then optimizes for price among those
+
+> Exam-wording cue: a workload can run on **"multiple servers of various sizes, with a variable number of CPUs"** and just wants the **cheapest possible** capacity, with no preference for a specific instance type → **Spot Fleet with the `lowestPrice` allocation strategy** — this is exactly what lets you leave instance-type selection to AWS instead of hardcoding one type/size in advance, completing the "EMR on Spot" answer for a short, fault-tolerant, distributable batch job (see the analytics notes' EMR+Spot cue).
 - **Reserved Instances** — up to 72% discount (this supersedes an older "40-60%" figure some cheat sheets still quote — AWS's current numbers go higher, especially 3-year All Upfront); 1 or 3 year term; No/Partial/All Upfront payment; Regional or Zonal scope; can trade on the Reserved Instance Marketplace
   - **Convertible Reserved Instances** — up to 66% discount; can change instance type, family, OS, scope, and tenancy
 - **Savings Plans** — commit to $/hour usage for 1 or 3 years (up to 72% discount); locked to instance family + region, but flexible on size/OS/tenancy; usage beyond the commitment bills at On-Demand price
-- **Dedicated Instances** — dedicated hardware, shared with other instances of the same account
-- **Dedicated Hosts** — physically isolated hardware, useful for licensing/compliance
+- **Dedicated Instances** — dedicated hardware, shared with other instances of the same account; AWS manages host allocation for you (no visibility into which physical server, no control over instance placement); billed per instance-hour plus a small one-time account-level fee
+- **Dedicated Hosts** — an entire specific physical server dedicated to you, with full visibility (host ID, sockets, physical cores) and control over instance placement on it; billed **per host**, whether fully utilized or not — built for BYOL software licensed per-socket/per-core, or compliance requiring proof of exactly which physical server something ran on
 - **Bare Metal EC2 Instances** — direct access to underlying server hardware
+
+> Exam-wording cue: "isolate instances to a single tenant" / "single-tenant hardware" alone, with **no mention of per-socket/per-core licensing or needing host-level visibility** → **Dedicated Instances** is the more cost-effective answer — both options satisfy single-tenancy, but Dedicated Hosts charge for an entire host's capacity to provide visibility/control the scenario doesn't ask for. Regulatory/compliance wording alone doesn't automatically mean Dedicated Hosts; only reach for Dedicated Hosts when the scenario specifically needs host ID/socket/core visibility or BYOL licensing tied to physical hardware.
+
+> Exam-wording cue: "quick tests / unpredictable, spiky traffic, no commitment" → **On-Demand**. "Stable, predictable, long-running workload, willing to commit 1-3 years for a discount" → **Reserved Instances** (fixed instance type/family) or **Savings Plans** (more flexible on size/OS/tenancy). "Fault-tolerant/interruptible workload, maximum cost savings, don't need a guaranteed specific instance type" → **Spot** (explicitly **not** suitable for anything requiring high availability, unless the workload itself tolerates losing instances). "Guaranteed capacity in a specific AZ, no discount needed" → **On-Demand Capacity Reservation**. "Licensing tied to physical cores/sockets, or compliance requiring dedicated hardware" → **Dedicated Hosts**; "just need isolated hardware, don't care about visibility into sockets/cores" → **Dedicated Instances** (cheaper, less control).
 
 ## Launch Configuration
 
 - **Launch Templates** — store instance launch parameters for reuse
-- **User data** — up to 16KB of bootstrap script; runs **once**, at first boot only, and executes as the **root** user; used to automate tasks like installing updates/software or downloading files at launch
+- **User data** — up to 16KB of bootstrap script; runs **once**, at first boot only, and executes as the **root** user with **full (root-level) privileges** — no `sudo` needed in the script itself; used to automate tasks like installing updates/software or downloading files at launch
+  - Accessible from within the instance via the **Instance Metadata Service (IMDS)** at `169.254.169.254/latest/user-data`
+  - **Not encrypted** by default — don't put secrets/credentials directly in it; fetch them at runtime from Secrets Manager/SSM Parameter Store instead
 - **Instance metadata** — available via URI or query tool (IMDS)
 - **Root device volumes** — EBS-backed or Instance Store-backed
 - **Run Command** (SSM) — manage live instances without SSH
 - **EC2 Instance Connect** — browser-based SSH, no key file, AWS uploads a temporary key; works out-of-the-box only on Amazon Linux 2; port 22 must still be open
+
+> Exam-wording cue: "run a script **once**, automatically, right when an instance first launches, with full/root privileges, no `sudo` needed" → **User Data**. "Run commands on an **already-running** instance, on-demand, without SSH" → **SSM Run Command** instead — User Data only fires at initial boot, never again, and always executes as root regardless of the AMI's default login user.
 
 ### Amazon Machine Images (AMIs)
 
@@ -49,6 +63,8 @@ AWS offers 300+ EC2 instance types across 5 instance families, each with varying
 - Root EBS volume must be encrypted; RAM must be under 150GB; not supported on bare metal
 - Supported families include C3/C4/C5/I3/M3/M4/R3/R4/T2/T3
 - Max 60 days hibernated; available for On-Demand, Reserved, and Spot
+
+> Exam-wording cue: "**stop/start** cycle" + "**slow application startup / auxiliary software re-initialization** every time it's started" → **EC2 Hibernate** — it specifically preserves *in-memory state* across stop/start, skipping the OS boot process and re-initialization of whatever was already running in RAM. A faster instance type, a custom AMI, or a User Data script wouldn't fix this, since the bottleneck is the application's own runtime initialization, not raw boot speed.
 
 ## Placement Groups
 
@@ -68,6 +84,9 @@ An ENI is what a security group and an IP address actually attach to — see the
 - **High Availability** — running an application across at least 2 data centers (i.e. 2+ Availability Zones) so it survives losing one; usually goes hand-in-hand with horizontal scaling, but is a related, distinct concept from scalability
   - Can be **passive** (e.g. RDS Multi-AZ standby) or **active** (e.g. a horizontally-scaled ASG serving traffic from every AZ)
   - For EC2 specifically: HA means running the ASG and Load Balancer across multiple AZs, not just scaling within one
+  - **Minimum-cost math for "at least N instances always available, tolerating a single AZ failure"**: spreading N instances across just **2 AZs** requires **N instances in *each* AZ (2N total)** to guarantee N remain if either AZ fails — you don't know in advance which AZ goes down, so each must independently hold full capacity. Spreading across **3 AZs** instead, at roughly N/2 per AZ (~1.5N total), means losing any one AZ still leaves N running, since only 1/3 of capacity is lost per AZ instead of 1/2 — meeting the same guarantee with fewer total instances
+
+> Exam-wording cue: "at least N instances **always** available, tolerating a **single AZ failure**, minimum cost" → don't just spread N across 2 AZs (that actually requires 2N total instances to guarantee the floor, not N). The cost-minimal design uses **3 AZs**, each holding roughly N/2 instances, so losing any one AZ still leaves N running — meeting the requirement with ~1.5N total instances instead of 2N.
 
 ## Auto Scaling
 
@@ -90,6 +109,16 @@ An ENI is what a security group and an IP address actually attach to — see the
 - **Suspending the `ReplaceUnhealthy` process** — a group-wide alternative: ASGs run several automatic background processes (`Launch`, `Terminate`, `HealthCheck`, `ReplaceUnhealthy`, `AZRebalance`, `AlarmNotification`, `ScheduledActions`, `AddToLoadBalancer`); suspending just `ReplaceUnhealthy` stops the ASG from terminating/replacing instances that fail health checks — useful when planned maintenance (e.g. a rolling patch that takes an app briefly offline) would otherwise look like an unhealthy instance and get killed and replaced mid-work
 
 > Exam-wording cue: need to work on **one specific instance** without it being terminated or losing overall serving capacity → **Standby state** (don't decrement desired capacity). Need to perform maintenance **across the group** where health checks would otherwise flag instances as unhealthy during the work (e.g. a manual rolling update) → **suspend the `ReplaceUnhealthy` process** for the duration, then resume it. Both avoid termination; Standby is per-instance and explicit, `ReplaceUnhealthy` suspension is group-wide and health-check-driven.
+
+### Troubleshooting: ASG Not Terminating an Unhealthy Instance
+
+Besides a suspended `ReplaceUnhealthy` process, three other common (non-misconfiguration) reasons an unhealthy instance isn't being replaced yet:
+
+- **`HealthCheckType` doesn't include ELB unless explicitly configured** — by default an ASG only checks EC2 status; an instance failing its ALB/NLB target health check won't be seen as unhealthy at all until `HealthCheckType` is set to include `ELB`
+- **The health check grace period hasn't expired** — a newly-launched (or recently-relaunched) instance gets a grace window before failing checks count against it
+- **The instance may be in `Impaired` status** — Amazon EC2 Auto Scaling doesn't immediately terminate an `Impaired` instance; it deliberately waits a few minutes to give it a chance to self-recover, and may also delay/skip action entirely if there's insufficient CloudWatch status-check data to act on confidently
+
+> Exam-wording cue: "why isn't my ASG replacing an unhealthy instance" (troubleshooting, not "how do I prevent it") → check, in order: is `ReplaceUnhealthy` suspended, does `HealthCheckType` actually include `ELB`, has the health check grace period expired, and is the instance simply still within its post-`Impaired` wait window. All four are legitimate, non-bug explanations — the ASG is often working as designed, just not yet.
 
 > Exam-wording cue: instance-replacement **order** differs by process. **`AZRebalance`** (fixing an AZ imbalance) always **launches the replacement first, then terminates** the old instance — it can even temporarily exceed max size (by ~10%, rounded up) to do so, since the instances being replaced aren't broken, just unevenly distributed, and AWS avoids a capacity dip. **`ReplaceUnhealthy`** (a single failed instance) does the opposite: **terminates the unhealthy instance first, then launches** a replacement — no allowance to exceed max size, since the bad instance should come out immediately. A question asking "does the ASG launch or terminate first" hinges entirely on *which* process is triggering the replacement.
 

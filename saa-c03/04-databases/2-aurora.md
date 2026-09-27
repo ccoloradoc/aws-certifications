@@ -10,6 +10,8 @@ Aurora is one of the engine options under RDS, but different enough to warrant i
 - **Writer endpoint & Reader endpoint** — Aurora gives you two built-in cluster DNS endpoints instead of one:
   - **Writer endpoint** — always points at the current primary/writer instance; if a failover happens, this endpoint automatically repoints to the newly promoted writer, so the application doesn't need to change anything
   - **Reader endpoint** — load-balances read traffic across all available Aurora Replicas; adding/removing replicas is automatically reflected here
+
+> Exam-wording cue: "reads are adding latency/I/O contention to writes on Aurora" → **add Aurora Read Replicas and route reads through the Reader Endpoint**, writes stay on the **Writer Endpoint** — Aurora Replicas are simultaneously the HA mechanism *and* usable for read scaling (unlike a standard RDS Multi-AZ standby, which sits idle and can't serve reads at all), so this fix requires no new service, just using the cluster's existing dual-endpoint design to physically separate where reads vs. writes are served from.
 - **Aurora Auto Scaling** — automatically adds/removes Aurora Replicas in response to CloudWatch metrics (e.g. CPU utilization or connection count) and a target-tracking policy, up to a configured maximum; new replicas are automatically included in the Reader endpoint's load balancing
 - **Custom Endpoints** — define a named subset of instances instead of using the default reader endpoint; lets you isolate specific replicas (which can be provisioned with a bigger instance size than the rest of the cluster) to absorb heavy/complex analytical queries without that load competing with regular read traffic on the other replicas
 - **Aurora Database Cloning** — creates a new cluster from an existing one via copy-on-write (shares the original volume until writes diverge); much faster/cheaper than snapshot+restore; good for spinning up a staging DB from production
@@ -21,6 +23,9 @@ Aurora is one of the engine options under RDS, but different enough to warrant i
 
 - Spans multiple regions: 1 primary (read/write) region + up to 10 secondary read-only regions (<1s replication lag, up to 16 replicas each)
 - Promoting a secondary region for DR has RTO <1 minute
+
+> Exam-wording cue: "RDS (with Read Replicas already in use) still has performance issues, must stay relational, needs to serve **global/worldwide** read traffic (e.g. branch offices around the world)" → migrate the engine to **Amazon Aurora** (MySQL/Postgres-compatible, ~5x/~3x the performance of RDS) with **Aurora Global Database** for low-latency reads in each region. "Read Replicas aren't enough" in the wording rules out "just add more RDS read replicas" as the answer — the question is testing whether you know to switch engines rather than scale the same one harder.
+
 - **Aurora Serverless** auto-scales capacity, ideal for infrequent/unpredictable workloads, pay per second
   - **Exam scenario**: production runs on a full Aurora Cluster, and the dev team wants a scaled-down copy that can absorb occasional heavy workloads but sits unused most of the time — while minimizing cost. Fix: run the dev/test environment on **Aurora Serverless** — it auto-scales capacity up for the heavy workload and back down when idle, billed per-second, so an idle dev environment costs almost nothing, with no application changes needed since it's still Aurora-compatible
 
